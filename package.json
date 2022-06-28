@@ -1,0 +1,31 @@
+{
+  "name": "project_1_blogmanagment",
+  "version": "1.0.0",
+  "description": "Repository for backend cohort - Radon",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GautamMehta19/project_1_blogManagment.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/GautamMehta19/project_1_blogManagment/issues"
+  },
+  "homepage": "https://github.com/GautamMehta19/project_1_blogManagment#readme",
+  "dependencies": {
+    "body-parser": "^1.20.0",
+    "cors": "^2.8.5",
+    "email-validator": "^2.0.4",
+    "express": "^4.18.1",
+    "jsonwebtoken": "^8.5.1",
+    "loadash": "^1.0.0",
+    "mongoose": "^6.4.1",
+    "nodemon": "^2.0.18",
+    "npm": "^8.13.1"
+  }
+}
