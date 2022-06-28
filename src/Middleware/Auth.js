@@ -3,12 +3,14 @@ const blogsModel = require("../models/blogsModel")
 
 const jwtValidation = function (req, res, next) {
     try {
-        let token = req.headers["x-Api-Key"];
-        if (!token) token = req.headers["x-api-key"];
+        let token = req.headers["x-Api-Key"]; 
+        if (!token) token = req.headers["x-api-key"]; 
 
-        if (!token) return res.status(400).send({ status: false, msg: "token must be present" });
+        if (!token) return res.status(400).send({ status: false, msg: "token must be present" }); // if it is not present it gives 400 http code in response with alert message
 
-        jwt.verify(token, "project-1", (err, decoded) => {
+        // To verify the token, we are using error handling callback function
+
+        jwt.verify(token, "project-1", (err, decoded) => {     
             //Only if token validation Fails
             if (err) {
                 return res.status(401).send({
@@ -71,8 +73,8 @@ const authoriseByPath = async function (req, res, next) {
     try {
         
         let authorLoggedIn = req.token.authorId   //Accessing authorId from attribute
-        let blogId = req.params.blogId
-        if (!blogId.match(/^[0-9a-f]{24}$/)) {
+        let blogId = req.params.blogId  
+        if (!blogId.match(/^[0-9a-f]{24}$/)) {    //check the condition using regex pattern
             return res.status(400).send({
                 status: false,
                 msg: "Not a valid ObjectId"
