@@ -8,7 +8,7 @@ const jwt = require('jsonwebtoken');
 //------------------Handler For Creating Authors--------------------//
 const authors = async function (req, res) {
     try {
-        let data = req.body //Accessing Data from from postman body
+        let data = req.body //Accessing Data from postman body
 
         if(Object.keys(data).length == 0){
            return res.status(400).send({
