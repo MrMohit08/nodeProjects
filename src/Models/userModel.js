@@ -9,13 +9,14 @@ const userSchema = new mongoose.Schema({
     name:{
         type:String,
         required:"name is required field",
+        trim:true
         
     },
     phone:{
         type:String,
         required:"phone is required field",
         unique:true,
-        trim:true,
+        trim:true
     },
     email:{
         type:String,
@@ -26,13 +27,14 @@ const userSchema = new mongoose.Schema({
     password:{
         type:String,
         required:"password is required field",
+        trim:true,
         min:8,
         max:15
     },
-    address:{
-        street:String,
-        city:String,
-        pincode:String
+    address: {
+        street: { type: String },
+        city: { type: String },
+        pincode: { type: Number }
     }
 
 }, {timestamps:true})
