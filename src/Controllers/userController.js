@@ -215,6 +215,7 @@ catch (error) {
 }
  
 
-module.exports = {createUser,userLogin}
+module.exports.createUser
+module.exports.userLogin
 
     
