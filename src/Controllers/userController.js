@@ -114,11 +114,11 @@ const createUser = async function(req, res){
     })
 }
  //validations for street
- if (!street || (typeof (street) != "string" || !citystreet.match(/^[a-zA-Z0-9]+$/))) {
-    return res.status(400).send({
-        status: false,
-        msg: "Enter valid street name"
-    })
+ if(street){
+    let validateStreet = /^[a-zA-Z0-9]/
+    if (!validateStreet.test(street)) {
+        return res.status(400).send({ status: false, message: "enter valid street name" })
+    }
 }
 //validations for pincode
 if (!pincode) {
@@ -215,7 +215,7 @@ catch (error) {
 }
  
 
-module.exports.createUser
-module.exports.userLogin
+module.exports.createUser = createUser
+module.exports.userLogin = userLogin
 
     
