@@ -72,6 +72,7 @@ const createUser = async function(req, res){
     msg: "Email is Missing or has invalid input"
 })
 }
+//validation for proper email format
    if (!validator.validate(email)) {
     return res.status(400).send({
     status: false,
@@ -102,8 +103,8 @@ const createUser = async function(req, res){
          })
 }
  //------------------------------------ address----------------------------------------------------// 
- let street = data.address.street
- let city = data.address.city
+ let street = data.address.street // we passed the street data in body through data.address in the postman
+ let city = data.address.city 
  let pincode = data.address.pincode
 
 //validation for city
@@ -117,7 +118,10 @@ const createUser = async function(req, res){
  if(street){
     let validateStreet = /^[a-zA-Z0-9]/
     if (!validateStreet.test(street)) {
-        return res.status(400).send({ status: false, message: "enter valid street name" })
+        return res.status(400).send({
+             status: false,
+              message: "enter valid street name" 
+       })
     }
 }
 //validations for pincode
@@ -126,13 +130,14 @@ if (!pincode) {
     status: false,
     msg: "Pincode is Missing or has invalid input"
 })
-}
+} // validate pincode in pin format
    if (!pv.validate(pincode)) {
     return res.status(400).send({
     status: false,
     msg: "Pincode is invalid"
 })
 }
+//After passing all the validations it creates the user data 
 const user = await UserModel.create(data)
    return res.status(201).send({
      status: true,
@@ -179,10 +184,10 @@ if (!password || (typeof (password) === 'string' &&  (password).trim().length ==
         match(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)) {
             return res.status(400).send({
                 status: false,
-                msg: "password must be 8 charecter long with a number special charecter and should have both upper and lowercase alphabet"
+                msg: "password must be 8 charecter long with a number, special charecter and should have both upper and lowercase alphabet"
             })
      }
-
+    
      const user = await UserModel.findOne({ email : userName, password : password});
 
      if(!user){
@@ -193,7 +198,7 @@ if (!password || (typeof (password) === 'string' &&  (password).trim().length ==
     }
     //Token Validation
     let token = jwt.sign({   //jwt.sign method is used to generate or create token
-        userId : user._id,  //_id contains payload  
+        userId : user._id,  //_id contains an entire payload of userData 
            iat : Math.floor(Date.now() /1000), // issued current date
            exp : Math .floor(Date.now() /1000) + (60 * 60) // expired will be after 1 hour
        },
