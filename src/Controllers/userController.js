@@ -17,7 +17,7 @@ const createUser = async function(req, res){
     })
  }
     //Validation for title
-    if (!title || (typeof (title) != "string")) {
+    if (!title || (typeof (title) != "string") || (title.trim().length==0)) {
         return res.status(400).send({
             status: false,
             msg: "Title is Missing or does not have a valid input"
@@ -39,7 +39,7 @@ const createUser = async function(req, res){
         })
     }
     // validation for phone
-    if(!phone || (typeof (phone) != 'number' && (phone).trim().length === 0)) {
+    if(!phone || (typeof (phone) != 'string') || (phone.trim().length == 0)) {
         return res.status(400).send({
             status: false,
             msg: "Mobile number is required"
@@ -47,7 +47,7 @@ const createUser = async function(req, res){
     }
     // create a function to validate, so that it comes in proper format
      const isValidMobile = function (number) {
-        return /^(\()?\d{3}(\))?(|\s)?\d{3}(|\s)\d{4}$/.test(number)
+        return /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/.test(number)
 }
 
    if (!isValidMobile(phone)) {
@@ -66,7 +66,7 @@ const createUser = async function(req, res){
 }
 
    // validation for email 
-   if (!email || (typeof (email) != "string")) {
+   if (!email || (typeof (email) != "string") || (email.trim().length == 0)) {
     return res.status(400).send({
     status: false,
     msg: "Email is Missing or has invalid input"
@@ -89,7 +89,7 @@ const createUser = async function(req, res){
 }
 
   // validation for password 
-    if (!password || (typeof (password) === 'string' &&  (password).trim().length === 0)|| !password.
+    if (!password || (typeof (password) != "string") || (password.trim().length == 0)|| !password.
         match(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)) {
             return res.status(400).send({
                 status: false,

@@ -3,6 +3,7 @@ const userSchema = new mongoose.Schema({
     title:{
         type:String,
         required:"title is required",
+        trim:true,
         enum:["Mr","Mrs","Miss"],
        
     },
@@ -13,7 +14,7 @@ const userSchema = new mongoose.Schema({
         
     },
     phone:{
-        type:Number,
+        type:String,
         required:"phone is required field",
         unique:true,
         trim:true
