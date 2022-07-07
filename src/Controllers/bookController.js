@@ -182,13 +182,46 @@ let displayingData = await BookModel.find(filterCondition).select({_id:1, title:
 //----------------------------------------get data by book id------------------------------------//
 
 const getBooksById = async function (req, res) {
-    try
-    {
-        let bookId  = req.params.bookId   //getting bookid from path params
-        //let userId = req.userId
-        if(!bookId){
-            return res.status(400).send({status:false , message: "Please give book id"})
-        }
+    try{
+    //we create a variable named "bookId" here
+        let bookId  = req.params.bookId //we are getting bookid from path params
 
+    //validate if object id is entered or not 
+        if(!bookId){
+          return res.status(400).send({
+            status:false, 
+            message: "Please give book id"
+        })
+        }
+    //check if objectId is in valid format
+        let isValidbookID = mongoose.Types.ObjectId.isValid(bookId);
+        if (!isValidbookID) {
+            return res.status(400).send({
+               status: false,
+               message: "Book Id is Not Valid" 
+        });
+     }
+    const getBookData = await BookModel.findById(bookId)
+    if(!getBookData){
+        return res.status(404).send({
+            status : false,
+            message : "book id is not present in the database"
+        })
+    }
+    if(getBookData.isDeleted == true){
+         return res.status(404).send({
+          status: false,
+          message: "Book not found or have already been deleted"
+         })
+    }     
+
+    let getReviews = await ReviewModel.find({ bookId: getBookData._id, isDeleted: false });
+
+         
+
+
+
+
+    
     }
 }
