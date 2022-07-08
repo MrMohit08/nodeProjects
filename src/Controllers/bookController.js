@@ -30,16 +30,22 @@ const createBook = async function(req, res) {
           msg:"Enter valid USER ID"
         })
     }
-
- // validation for book title - It is mandatory field 
+// validation for book title - It is mandatory field 
      if((!title) || (typeof(title) != "string") || (title.trim().length == 0)){
        return res.status(400).send({
          status:false,
          msg:"Title is Missing or has invali entry"
     })
 }
- 
- // validation for excerpt 
+//check if title is unique
+ const titles = await BookModel.findOne({ title : title })
+ if (titles) {
+     return res.status(400).send({
+        status: false,
+        message: "title already exist"
+     })
+ }
+// validation for excerpt 
  if(!excerpt || (typeof(excerpt) != "string") || (excerpt.trim().length == 0) || !excerpt.match(
     /^[a-zA-Z0-9][a-zA-Z0-9\s\-,?_.]+$/)){
     return res.status(400).send({
@@ -248,7 +254,7 @@ const updateBook = async function(req, res){
         })
     }
     //check if id is valid or not 
-      let isValidbookID = mongoose.Types.ObjectId.isValid(requestBookId);
+      let isValidbookID = mongoose.Types.ObjectId.isValid(requestBookId); // here we use method mongoose "isValid" method
         if (!isValidbookID) {
              return res.status(400).send({
               status: false,
@@ -269,22 +275,33 @@ const updateBook = async function(req, res){
       let newReleased = updateRequest.releasedAt
       let newISBN = updateRequest.ISBN
 
-      let updatedBook
-      
       //Checks if any condition is coming in request for updation
      if(Object.keys(updateRequest).length == 0){
         return res.status(400).send({
             status: false,
-            msg : "Mentiom the fields to be updated"
+            msg : "Mention the fields to be updated"
         })
       }
+
+      let updatedBook
       //validation for newTitle
-      if(newTitle && (typeof(newTitle)== "string") && (newTitle.trim().length != 0)){
+      if(newTitle && (typeof(newTitle) == "string") && (newTitle.trim().length != 0)){
         updatedBook = await BookModel.findOneAndUpdate(
             {_id : requestBookId}, 
             {title : newTitle},
-            {new : true} )  // set the new option to true to return the document after update was applied
-        }
+            {new : true})  // set the new option to true to return the document after update was applied
+      }
+
+      // check if it unique
+        const title = await BookModel.findOne({ title: newTitle })
+            if (title) {
+                return res.status(409).send({
+                    status: false,
+                    message: `title ${newTitle} already taken`
+                 })
+            }
+           
+        
 
       //validation for excerpt
       if(newExcerpt && (typeof(newExcerpt)== "string") && (newExcerpt.trim().length != 0)){
@@ -294,10 +311,96 @@ const updateBook = async function(req, res){
             {new : true}) //set the new option to true to return the document after update was applied
     }
 
-     // 
+     // validation for ISBN
+     if(newISBN && (typeof(newISBN)== "string") && (newISBN.trim().length != 0) && newISBN.match(
+        /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/)){
+        updatedBook = await BookModel.findOneAndUpdate(
+            {_id : requestBookId}, 
+            {ISBN : newISBN},
+            {new : true})
+        }
 
+    // check if ISBN is unique 
+    const iisBN = await BookModel.findOne({ ISBN : newISBN})
+    if (iisBN) {
+        return res.status(409).send({
+           status: false,
+           message: `ISBN ${newISBN} already exist`
+        })
+    }
+   // validation for releasedAt
+   if (newReleased) {
 
+    let validateDate = /^\d{4}\-(0?[1-9]|1[012])\-(0?[1-9]|[12][0-9]|3[01])$/gm
+    if (!validateDate.test(newReleased)) {
+        return res.status(400).send({
+            status: false,
+            message: "date must be in format  YYYY-MM-DD or invalid!!!" })
+       }
+       updatedBook = await BookModel.findOneAndUpdate(
+        {_id : requestBookId}, 
+        {ISBN : newReleased},
+        {new : true})
+    }
+    // check if update book is not created
+    if(!updatedBook){
+        return res.status(400).send({
+            status : false,
+            msg :" No data updated due to invalid request"
+        })
+    }
+     res.status(200).send({
+      status: true,
+      data : updatedBook
+     })
+}
+catch(err){
+    console.log("Error is from update book", err.message)
+      res.status(500).send({
+         status : false, msg : err.message})
+}
+}
 
+//-------------------------------------------delete book by id------------------------//
 
+const deleteBooks = async function(req , res){
+    try{
+        // we create a variable named "requestbookid" here
+        let requestBookId = req.params.bookId //getting book id from path param
+        
+        if(!requestBookId){
+            return res.status(400).send({
+              status:false , message: "Please give book id"})
+        }
+    //check if id is valid or not 
+       let isValidbookID = mongoose.Types.ObjectId.isValid(requestBookId); // here we use method mongoose "isValid" method
+      if (!isValidbookID) {
+           return res.status(400).send({
+            status: false, message: "Book Id is Not Valid"});
+  }
+    //check id exist in book model 
+    let deleteId = await BookModel.findById(requestBookId)
+    if(!deleteId || (deleteId.isDeleted == true)){
+        return res.status(404).send({
+            status : false, msg : "Book Id is not found in our database"})         
+    }
+    await BookModel.findOneAndUpdate({_id : requestBookId},{isDeleted : true, deletedAt : Date.now()},{new : true, upsert : true})
+    await ReviewModel.updateOne({bookId:requestBookId, isDeleted:false},{ $set: {isDeleted:true}})
+        res.status(200).send({
+            status: true,
+            message: "Book deleted successfully"});
+}
+    catch(err){
+        res.status(500).send({
+         status: false,
+         error: err.message
+})
+           
     }
 }
+
+module.exports.createBook = createBook
+module.exports.getAllBooks = getAllBooks
+module.exports.getBooksById = getBooksById
+module.exports.updateBook = updateBook
+module.exports.deleteBooks = deleteBooks

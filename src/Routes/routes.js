@@ -9,7 +9,11 @@ const middleware = require("../middleware/userAuth")
 
 //UserModel APIs
 router.post("/register",userController.createUser)
-router.post('/Login', userController.userLogin)
+router.post('/Login', middleware.tokenValidator, userController.userLogin)
+
+//book model APIs
+
+
 
 
 

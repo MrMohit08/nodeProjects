@@ -1,13 +1,16 @@
 const jwt = require('jsonwebtoken')
+const UserModel = require("../Models/userModel")
+const BookModel = require("../Models/bookModel")
 
 const tokenValidator = async function (req, res, next) {
     try {
         let token = req.headers["y-Api-key"] // we pass y-Api-key in postman headers and it stores in token variable
-        if (!token) token = req.headers["y-api-key"] // if y-Api-key is not present in headers than pass y-api-key in header
-
+        if (!token){
+             token = req.headers["y-api-key"] // if y-Api-key is not present in headers than pass y-api-key in header
+        }
         if (!token) return res.status(403).send({
              status: false,
-              msg: "Missing authentication token in request" }) // if token is not present it gives 400 http code in response with alert message
+              msg: "Authentication Token is missing" }) // if token is not present it gives 400 http code in response with alert message
     
     // To verify the token, we are using error handling callback function
 
@@ -31,6 +34,8 @@ catch (err) {
     res.status(500).send({ msg: err.message })
 }
 }
+
+
 
 
 module.exports.tokenValidator = tokenValidator
