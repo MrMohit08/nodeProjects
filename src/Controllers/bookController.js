@@ -214,14 +214,90 @@ const getBooksById = async function (req, res) {
           message: "Book not found or have already been deleted"
          })
     }     
-
+    // find book id in review model
     let getReviews = await ReviewModel.find({ bookId: getBookData._id, isDeleted: false });
+    getBookData.reviewsData = getReviews ////adding new property inside book object
 
-         
+       res.status(200).send({
+         status: true,
+         count: getReviews.length,
+         message: "Books list",
+        data: getBookData
+    })
+}
+catch (err) {
+    res.status(500).send({
+      status: false,
+      message: err.message
+     })
+  }
+}
+
+//--------------------------------------------update book-----------------------------------------------//
+
+const updateBook = async function(req, res){
+    try{
+      // we create a variable named "requestBookId" here
+      let requestBookId = req.params.bookId // we are getting bookid from path params
+      let updateRequest = req.body 
+
+      if(!requestBookId){
+        return res.status(400).send({
+          status:false,
+          message: "Please give book id"
+        })
+    }
+    //check if id is valid or not 
+      let isValidbookID = mongoose.Types.ObjectId.isValid(requestBookId);
+        if (!isValidbookID) {
+             return res.status(400).send({
+              status: false,
+              message: "Book Id is Not Valid"
+         });
+    }
+    //check id exist in book model 
+    let updateId = await BookModel.findById(requestBookId)
+    if(!updateId || (updateId.isDeleted == true)){
+        return res.status(404).send({
+            status : false,
+            msg : "Book Id not Found"
+        })         
+    }
+      
+      let newTitle = updateRequest.title
+      let newExcerpt = updateRequest.excerpt
+      let newReleased = updateRequest.releasedAt
+      let newISBN = updateRequest.ISBN
+
+      let updatedBook
+      
+      //Checks if any condition is coming in request for updation
+     if(Object.keys(updateRequest).length == 0){
+        return res.status(400).send({
+            status: false,
+            msg : "Mentiom the fields to be updated"
+        })
+      }
+      //validation for newTitle
+      if(newTitle && (typeof(newTitle)== "string") && (newTitle.trim().length != 0)){
+        updatedBook = await BookModel.findOneAndUpdate(
+            {_id : requestBookId}, 
+            {title : newTitle},
+            {new : true} )  // set the new option to true to return the document after update was applied
+        }
+
+      //validation for excerpt
+      if(newExcerpt && (typeof(newExcerpt)== "string") && (newExcerpt.trim().length != 0)){
+        updatedBook = await BookModel.findOneAndUpdate(
+            {_id : requestBookId}, 
+            {excerpt : newExcerpt},
+            {new : true}) //set the new option to true to return the document after update was applied
+    }
+
+     // 
 
 
 
 
-    
     }
 }
