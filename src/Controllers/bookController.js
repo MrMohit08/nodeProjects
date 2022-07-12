@@ -20,12 +20,12 @@ const createBook = async function(req, res) {
       message:"userId is Missing or has invali entry"
  })
 }
-  // validation for userId -userId is a valid userId
+  // check if user id is exist in database
     const user = await UserModel.findById(userId)
     if(!user){
       return res.send({
           status:false,
-          message:"Enter valid USER ID"
+          message:"user id is not found in our database"
         })
     }
 // validation for book title - It is mandatory field 
@@ -330,7 +330,7 @@ const updateBook = async function(req, res){
           status : false,message :" No data updated due to invalid request"})
     }
      res.status(200).send({
-       status: true,data : updatedBook})
+       status: true, data : updatedBook})
 }
 catch(err){
     console.log("Error is from update book", err.message)

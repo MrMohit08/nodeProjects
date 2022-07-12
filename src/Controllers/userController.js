@@ -39,7 +39,7 @@ const createUser = async function(req, res){
         })
     }
     // validation for phone
-    if(!phone || (typeof (phone) != 'string') || (phone.trim().length == 0)) {
+    if(!phone && (typeof (phone) != 'number') && phone.trim().length === 0) {
         return res.status(400).send({
             status: false,
             msg: "Mobile number is required"
