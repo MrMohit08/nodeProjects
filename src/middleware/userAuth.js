@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken')
-const UserModel = require("../Models/userModel")
+const mongoose = require("mongoose");
 const BookModel = require("../Models/bookModel")
 
 const tokenValidator = async function (req, res, next) {
@@ -81,7 +81,7 @@ const authorization = async function(req,res,next){
              return res.status(400).send({
               status: false, message: "Enter a valid book id"}); 
     }
-    let bookAccessing = await blogsModel.findById(BookId)
+    let bookAccessing = await BookModel.findById(BookId)
         if (!bookAccessing) {
             return res.status(404).send({
                 status: false, message: "Error! Please check book id and try again"})

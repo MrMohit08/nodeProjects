@@ -13,7 +13,7 @@ router.post('/Login', userController.userLogin)
 
 
 //Book API
-router.post("/books", middleware.tokenValidator, middleware.ownerAuth, bookController.createBook)
+router.post("/books", middleware.tokenValidator, middleware.ownerAuth, middleware.authorization, bookController.createBook)
 router.get("/books", middleware.tokenValidator, bookController.getAllBooks)
 router.get("/books/:bookId", middleware.tokenValidator, middleware.authorization, bookController.getBooksById)
 router.put("/books/:bookId", middleware.tokenValidator, middleware.authorization, bookController.updateBook)

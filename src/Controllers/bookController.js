@@ -1,6 +1,8 @@
 const BookModel = require("../Models/bookModel")
 const ReviewModel = require("../Models/reviewModel")
 const UserModel = require("../Models/userModel")
+const mongoose = require("mongoose");
+
 
 const createBook = async function(req, res) {
     try {
@@ -17,9 +19,16 @@ const createBook = async function(req, res) {
   if((!userId) || (typeof(userId) != "string") || (userId.trim().length == 0)){
     return res.status(400).send({
       status:false,
-      message:"userId is Missing or has invali entry"
+      message:"userId is Missing or has invalid entry"
  })
 }
+
+  // check user id is valid 
+  let isValidUserID = mongoose.Types.ObjectId.isValid(userId);
+  if (!isValidUserID) {
+      return res.status(400).send({
+        status: false, message: "user Id is Not Valid" });
+  }
   // check if user id is exist in database
     const user = await UserModel.findById(userId)
     if(!user){
@@ -32,7 +41,7 @@ const createBook = async function(req, res) {
      if((!title) || (typeof(title) != "string") || (title.trim().length == 0)){
        return res.status(400).send({
          status:false,
-         message:"Title is Missing or has invali entry"
+         message:"Title is Missing or has invalid entry"
     })
 }
 //check if title is unique

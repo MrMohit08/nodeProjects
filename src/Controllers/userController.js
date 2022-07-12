@@ -3,6 +3,7 @@ const validator = require("email-validator")
 const pv = require("pincode-validator");
 const jwt=require('jsonwebtoken')
 
+
 const createUser = async function(req, res){
     try{
     // we create a variable named "data" and store req.body in the variable    
@@ -44,17 +45,16 @@ const createUser = async function(req, res){
           status: false, message: "Phone number is required" })
     }
     // create a function to validate, so that it comes in proper format
-    let isValidMobile = function (number) {
-        let mobileRegex = /^[6-9]{1}[0-9]{9}$/;
-        return mobileRegex.test(number);
-    }
+    const isValidMobile = function (mphone) {
+        return /^(\()?\d{3}(\))?(|\s)?\d{3}(|\s)\d{4}$/.test(mphone)
+}
 
    if (!isValidMobile(phone)) {
      return res.status(400).send({
-       status: false, message: "Mobile number is invalid, please enter 10 digit mobile number" })
+       status: false, message: "Mobile number is invalid, please enter 10 digit mobile number"})
 } 
    //check for unique phone number
-   const isMobileAlreadyUsed = await UserModel.findOne({mobile : phone});
+   let isMobileAlreadyUsed = await UserModel.findOne({phone : phone});
       if(isMobileAlreadyUsed) {
          return res.status(400).send({
          status: false, message: "Mobile number is already Registred"
@@ -143,8 +143,9 @@ res.status(500).send({ status: false, message: err.message })
 
 const userLogin = async function(req,res){
     try {
-       let userName = req.body.email; // we passed the username through req.body in the postman
-       let password = req.body.password; // we passed the password through req.body in the postman
+       let data = req.body
+       let userName = data.email; // we passed the username through req.body in the postman
+       let password = data.password; // we passed the password through req.body in the postman
 
     // validation to check if data is coming or not in request body
     if(Object.keys(data).length == 0){
@@ -164,16 +165,13 @@ const userLogin = async function(req,res){
 // validate that email is in valid format
 if (!validator.validate(userName)) {
     return res.status(400).send({
-    status: false,
-    msg: "Email should be a valid email address"
-})
+    status: false, message: "Email should be a valid email address"})
 }
 // validate that password is in correct format
 if (!password || (typeof (password) === 'string' &&  (password).trim().length === 0)|| !password.
         match(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)) {
             return res.status(400).send({
-                status: false,
-                msg: "password must be 8 charecter long with a number, special charecter and should have both upper and lowercase alphabet"
+                status: false, message: "password must be 8 charecter long with a number, special charecter and should have both upper and lowercase alphabet"
             })
      }
     
@@ -181,9 +179,7 @@ if (!password || (typeof (password) === 'string' &&  (password).trim().length ==
 
      if(!user){
         return res.status(400).send({
-            status:false,
-            message:`Invalid login credentials`
-        });
+            status:false,message:`Invalid login credentials`});
     }
     //Token Validation
     let token = jwt.sign({   //jwt.sign method is used to generate or create token
