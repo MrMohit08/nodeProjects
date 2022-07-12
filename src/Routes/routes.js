@@ -1,23 +1,28 @@
 const express = require('express');
 const router = express.Router();
 const userController = require("../Controllers/userController")
-//const booksController = require("../controller/booksController")
-//const reviewController = require("../controller/reviewController")
+const bookController = require("../Controllers/bookController")
+const reviewController = require("../Controllers/reviewController")
 const middleware = require("../middleware/userAuth")
  
 
 
-//UserModel APIs
+//User API
 router.post("/register",userController.createUser)
-router.post('/Login', middleware.tokenValidator, userController.userLogin)
-
-//book model APIs
+router.post('/Login', userController.userLogin)
 
 
+//Book API
+router.post("/books", middleware.tokenValidator, middleware.ownerAuth, bookController.createBook)
+router.get("/books", middleware.tokenValidator, bookController.getAllBooks)
+router.get("/books/:bookId", middleware.tokenValidator, middleware.authorization, bookController.getBooksById)
+router.put("/books/:bookId", middleware.tokenValidator, middleware.authorization, bookController.updateBook)
+router.delete("/books/:bookId", middleware.tokenValidator, middleware.authorization, bookController.deleteBooks)
 
-
-
-
+//Review API
+router.post("/", reviewController.createReview)
+router.put("/books/:bookId/review/:reviewId", reviewController.updateReview)
+router.delete("/books/:bookId/review/:reviewId", reviewController.deleteReview)
 
 
 module.exports=router;

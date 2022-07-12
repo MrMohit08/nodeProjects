@@ -20,7 +20,7 @@ const bookSchema = new mongoose.Schema({
         trim:true
     },
     ISBN:{
-        type:String,
+        type:Number,
         required:"ISBN is required",
         unique:true,
         trim:true
