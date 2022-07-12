@@ -44,54 +44,45 @@ const createUser = async function(req, res){
           status: false, message: "Phone number is required" })
     }
     // create a function to validate, so that it comes in proper format
-     const isValidMobile = function (number) {
-        return /^[6-9]\d{9}$/.test(number)
-}
+    let isValidMobile = function (number) {
+        let mobileRegex = /^[6-9]{1}[0-9]{9}$/;
+        return mobileRegex.test(number);
+    }
 
    if (!isValidMobile(phone)) {
      return res.status(400).send({
-       status: false,
-       message: 'Mobile number is invalid, please enter 10 digit mobile number' 
-   })
+       status: false, message: "Mobile number is invalid, please enter 10 digit mobile number" })
 } 
    //check for unique phone number
    const isMobileAlreadyUsed = await UserModel.findOne({mobile : phone});
       if(isMobileAlreadyUsed) {
          return res.status(400).send({
-         status: false,
-         msg: "Mobile number is already Registred"
+         status: false, message: "Mobile number is already Registred"
     })
 }
 
    // validation for email 
    if (!email || (typeof (email) != "string") || (email.trim().length == 0)) {
     return res.status(400).send({
-    status: false,
-    msg: "Email is Missing or has invalid input"
-})
+    status: false, message: "Email is Missing or has invalid input"})
 }
-//validation for proper email format
+  //validation for proper email format
    if (!validator.validate(email)) {
-    return res.status(400).send({
-    status: false,
-    msg: "Email-Id is invalid"
-})
+      return res.status(400).send({
+        status: false, message: "Email-Id is invalid"})
 }
   //Checks For Unique Email Id
   let checkEmail = await UserModel.findOne({email : email})
   if(checkEmail) {
-    return res.status(409).send({
-    status: false,
-    msg: "Email Id is already in use"
- })
+     return res.status(409).send({
+      status: false, message: "Email Id is already in use"})
 }
 
   // validation for password 
     if (!password || (typeof (password) != "string") || (password.trim().length == 0)|| !password.
         match(/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)) {
             return res.status(400).send({
-                status: false,
-                msg: "password must be 8 charecter long with a number special charecter and should have both upper and lowercase alphabet"
+                status: false, message: "password must be 8 charecter long with a number special charecter and should have both upper and lowercase alphabet"
             })
         }
     //password should be minimum length of 8 and should be max length of 15    
