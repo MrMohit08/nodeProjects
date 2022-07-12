@@ -39,15 +39,13 @@ const createUser = async function(req, res){
         })
     }
     // validation for phone
-    if(!phone && (typeof (phone) != 'number') && phone.trim().length === 0) {
+    if (!phone) {
         return res.status(400).send({
-            status: false,
-            msg: "Mobile number is required"
-        })
+          status: false, message: "Phone number is required" })
     }
     // create a function to validate, so that it comes in proper format
      const isValidMobile = function (number) {
-        return /^(\+91[\-\s]?)?[0]?(91)?[6789]\d{9}$/.test(number)
+        return /^[6-9]\d{9}$/.test(number)
 }
 
    if (!isValidMobile(phone)) {
