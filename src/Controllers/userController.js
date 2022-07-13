@@ -14,7 +14,7 @@ const createUser = async function(req, res){
     if(Object.keys(data).length == 0){
         return res.status(400).send({
          status: false,
-         msg : "Please provide user details"
+         message : "Please provide user details"
     })
  }
     //Validation for title

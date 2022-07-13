@@ -20,9 +20,9 @@ router.put("/books/:bookId", middleware.tokenValidator, middleware.authorization
 router.delete("/books/:bookId", middleware.tokenValidator, middleware.authorization, bookController.deleteBooks)
 
 //Review API
-router.post("/books/:bookId/review",  middleware.tokenValidator, middleware.authorization, reviewController.createReview)
-router.put("/books/:bookId/review/:reviewId", middleware.tokenValidator, middleware.authorization, reviewController.updateReview)
-router.delete("/books/:bookId/review/:reviewId", middleware.tokenValidator, middleware.authorization, reviewController.deleteReview)
+router.post("/books/:bookId/review", reviewController.createReview)
+router.put("/books/:bookId/review/:reviewId", reviewController.updateReview)
+router.delete("/books/:bookId/review/:reviewId", reviewController.deleteReview)
 
 
 module.exports=router;
