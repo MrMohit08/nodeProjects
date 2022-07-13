@@ -56,7 +56,7 @@ const createUser = async function(req, res){
    //check for unique phone number
    let isMobileAlreadyUsed = await UserModel.findOne({phone : phone});
       if(isMobileAlreadyUsed) {
-         return res.status(400).send({
+         return res.status(409).send({
          status: false, message: "Mobile number is already Registred"
     })
 }
@@ -185,7 +185,7 @@ if (!password || (typeof (password) === 'string' &&  (password).trim().length ==
     let token = jwt.sign({   //jwt.sign method is used to generate or create token
         userId : user._id,  //_id contains an entire payload of userData 
            iat : Math.floor(Date.now() /1000), // issued current date
-           exp : Math .floor(Date.now() /1000) + (60 * 60) // expired will be after 1 hour
+           exp : Math .floor(Date.now() /1000) * 24 * 60 * 60 // expired will be after 1 hour
        },
        "My name is Mohit"   // secret key 
     )

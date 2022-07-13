@@ -73,7 +73,7 @@ const ownerAuth = async function (req, res, next) {
 
 const authorization = async function(req,res,next){
     try{
-        let userLoggedIn = req.token.authorId   //Accessing userId from token attribute
+        let userLoggedIn = req.token.userId   //Accessing userId from token attribute
         let BookId = req.params.bookId  // pass book id in path params
      //check if book id is valid or not 
         let isValidbookID = mongoose.Types.ObjectId.isValid(BookId); // here we use mongoose "isValid" method
@@ -86,7 +86,7 @@ const authorization = async function(req,res,next){
             return res.status(404).send({
                 status: false, message: "Error! Please check book id and try again"})
         }
-    // 
+ 
     if (bookAccessing.userId != userLoggedIn) {
         return res.status(403).send({
             status: false, msg: "Error, authorization failed"})

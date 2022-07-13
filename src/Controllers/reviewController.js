@@ -1,6 +1,8 @@
 const BookModel = require("../Models/bookModel")
 const ReviewModel = require("../Models/reviewModel")
 const moment = require("moment")
+const mongoose = require("mongoose");
+
 
 
 const createReview = async function(req,res){
@@ -10,7 +12,7 @@ const createReview = async function(req,res){
         const{rating, reviewedBy, reviewedAt} = data;
 
         //check for empty body
-       if(Object.keys(data).length <= 0) {
+       if(Object.keys(data).length == 0) {
           return res.status(400).send({ status: false, message: "please provide review data" })
     }
         let bookid = req.params.bookId // pass book id in path params
@@ -48,7 +50,7 @@ const createReview = async function(req,res){
     let ratingvalidate = /^[0-5]{1}$/.test(rating)
     if (!ratingvalidate) {
         return res.status(400).send({ 
-          status: false, message: "please provide rating in single digit from 0 to 5 only " })
+          status: false, message: "please provide rating in single digit from 0 to 5 only"})
     }
 
      data.bookId = bookid
