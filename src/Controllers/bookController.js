@@ -53,21 +53,20 @@ const createBook = async function(req, res) {
      })
  }
 // validation for excerpt 
- if(!excerpt || (typeof(excerpt) != "number") || (excerpt.trim().length == 0) || !excerpt.match(
-    /^[a-zA-Z0-9][a-zA-Z0-9\s\-,?_.]+$/)){
-    return res.status(400).send({
-        status:false,
-        message:"Excerpt Body is Missing or has invalid entry"
-    })
+  if(!excerpt || (typeof(excerpt) != "string") || (excerpt.trim().length == 0)){
+     return res.status(400).send({
+       status:false, message:"Excerpt is missing or has invalid entry"})
 }
 
   // validation for ISBN 
- if(!ISBN || (typeof(ISBN) != "string") || (ISBN.trim().length == 0) || !ISBN.match(
-    /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/)){
+ if(!ISBN || (typeof(ISBN) != "string") || (ISBN.trim().length == 0)){
     return res.status(400).send({
-        status:false,
-        message:"ISBN is Missing or has invalid entry, please provide 10 or 13 "
-    })
+        status:false, message:"ISBN is Missing" })
+}
+
+let ISBNvalidate = /^(?=(?:\D*\d){10}(?:(?:\D*\d){3})?$)[\d-]+$/.test(ISBN.trim())
+if (!(ISBNvalidate)) {
+    return res.status(400).send({ status: false, message: "please provide 10 or 13 digits ISBN" })
 }
 
  // check ISBN is unique
