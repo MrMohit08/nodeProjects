@@ -171,8 +171,8 @@ const deleteReview = async function(req, res){
                return res.status(404).send({status: false, message: "reviewId should be present in params"})}
 
     //deleted data
-   let deleteData = await ReviewModel.findOneAndUpdate({ _id: getID.reviewId, isDeleted: false }, { $set: { isDeleted: true} })
-   let updatedData = await BookModel.findOneAndUpdate({ _id: getID.bookId }, { $inc: { reviews: -1 }})
+     await ReviewModel.findOneAndUpdate({ _id: getID.reviewId, isDeleted: false }, { $set: { isDeleted: true} })
+     await BookModel.findOneAndUpdate({ _id: getID.bookId }, { $inc: { reviews: -1 }})
 
           res.status(200).send({ Status: true, message: "Success" })
     
