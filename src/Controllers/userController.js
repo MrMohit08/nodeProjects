@@ -143,15 +143,14 @@ res.status(500).send({ status: false, message: err.message })
 
 const userLogin = async function(req,res){
     try {
-       let data = req.body
+       let data = req.body //req.body is stored in the data variable 
        let userName = data.email; // we passed the username through req.body in the postman
        let password = data.password; // we passed the password through req.body in the postman
 
     // validation to check if data is coming or not in request body
     if(Object.keys(data).length == 0){
         return res.status(400).send({
-         status: false,
-         msg : "Please provide user details"
+         status: false, msg : "Please provide user details"
     })
  }
  // validation for email & password
@@ -185,7 +184,7 @@ if (!password || (typeof (password) === 'string' &&  (password).trim().length ==
     let token = jwt.sign({   //jwt.sign method is used to generate or create token
         userId : user._id,  //_id contains an entire payload of userData 
            iat : Math.floor(Date.now() /1000), // issued current date
-           exp : Math .floor(Date.now() /1000) * 24 * 60 * 60 // expired will be after 1 hour
+           exp : Math .floor(Date.now() /1000) * 24 * 60 * 60 // expired will be after 24 hour
        },
        "My name is Mohit"   // secret key 
     )
