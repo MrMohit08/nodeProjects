@@ -4,12 +4,15 @@ const userController = require("../Controllers/userController")
 const bookController = require("../Controllers/bookController")
 const reviewController = require("../Controllers/reviewController")
 const middleware = require("../middleware/userAuth")
+const amazons3 = require("../s3Helper.js")
  
 
 
 //User API
 router.post("/register",userController.createUser)
 router.post('/Login', userController.userLogin)
+
+router.post("/write-file-aws" , amazons3.bookCover )
 
 
 //Book API

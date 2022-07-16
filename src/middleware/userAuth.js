@@ -17,8 +17,7 @@ const tokenValidator = async function (req, res, next) {
         //Only if token validation Fails
         if (err) {
             return res.status(401).send({
-                status: false,
-                msg: "Authentication Failed"
+                status: false,message: "Authentication Failed"
             })
         }
         //If token validaion Passes it goes to the else condition
