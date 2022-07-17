@@ -34,8 +34,8 @@ let uploadFile = ( file) =>{
 
 let bookCover = async function(req, res){
     try{
-        let files = req.files 
-        if(files && files.length>0){
+        let files = req.files //we are accessing the file data through req.files with the help of multer 
+        if(files && files.length>0){  //condition to check if file data is coming or not
 
           let uploadedFileUrl = await uploadFile( files[0] )
             res.status(201).send({message: "file uploaded successfully", data:uploadedFileUrl})
