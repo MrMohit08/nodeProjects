@@ -45,13 +45,13 @@ const createUrl = async function(req, res) {
     if (url) {
         console.log("Already exists...");
         return res.status(409).send({
-            status: false, message: "Already exists", data: url})
+            status: false, message: "It is Already exists", data: url})
   }
    else {
     let urlCode = shortid.generate().toLowerCase(); // generating the url code in lowercase 
    //condition if urlCode is not generated
     if (!urlCode) {
-        return res.status(409).send({
+        return res.status(400).send({
         status: false, message: "urlCode not generated"})
   }
  
@@ -59,7 +59,7 @@ const createUrl = async function(req, res) {
 let checkedUrlCode = await urlModel.findOne({urlCode:urlCode})
 if (checkedUrlCode) {
     return res.status(409).send({
-      status: false, message: "urlCode is exist in our database"})}
+      status: false, message: "urlCode is already exist in our database"})}
 
 let shortUrl = baseUrl + urlCode; // creating the short url 
    //check if short url is present or not
