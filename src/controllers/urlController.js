@@ -27,6 +27,12 @@ const createUrl = async function(req, res) {
      return res.status(400).send({
        status: false, message: "longUrl is required"})
     }
+    //check if longurl is in valid format
+    if(!isValid(data.longUrl)){
+        return res.status(400).send({
+        status: false, message: 'It can not be null or undefined'})
+     }   
+
     // check if baseurl is not found
     if(!validUrl.isUri(baseUrl)){
         return res.status(400).send({
@@ -84,7 +90,7 @@ let shortUrl = baseUrl + urlCode; // creating the short url
       return res.status(400).send({
         status : false,message :" No data found due to invalid request"})
   }
-     res.status(200).send({
+     res.status(201).send({
      status: true, message: "Data created successfully", data : newUrl})
     }
 }
