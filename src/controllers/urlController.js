@@ -1,96 +1,65 @@
 const validUrl = require('valid-url')
 const shortid = require('shortid')
 const urlModel = require("../Model/urlModel")
-
-//===========================================Validation=========================================//
-
-const isValid=function(value){
-    if(typeof value === 'undefined' || value === null) return false
-    if(typeof value !== 'string' || value.trim().length === 0) return false
-    return true;
-} 
+const { SET_ASYNC, GET_ASYNC } = require("../redisConfig");
 
 //============================================Url Api's=========================================//
 
 const createUrl = async function(req, res) {
     try{
         const data = req.body;
+        const longUrl = data.longUrl.trim()
         const baseUrl = 'http://localhost:3000/'
 
-    //Check if data is coming in request body
+//Check if data is coming in request body
     if(Object.keys(data).length == 0){
        return res.status(400).send({
-        status: false, message: "Please Provide details"})
+        status: false, message: "Please enter URL"})
     }
-    //check longUrl is present or not
-    if(!data.longUrl){
+//check if longUrl is present
+    if((!longUrl) || (typeof(longUrl) != "string")){
      return res.status(400).send({
        status: false, message: "longUrl is required"})
     }
-    //check if longurl is in valid format
-    if(!isValid(data.longUrl)){
-        return res.status(400).send({
-        status: false, message: 'It can not be null or undefined'})
-     }   
+// check if long url is in valid format 
+    if (!validUrl.isUri(longUrl)) {
+     return res.status(400).send({
+            status: false, message: "invalid URL"})
+   }
 
-    // check if baseurl is valid or not
-    if(!validUrl.isUri(baseUrl)){
-        return res.status(400).send({
-           status: false, message: "baseurl is not valid format"}) 
-    }
-    
-  // check long url is valid or not 
-  if (validUrl.isUri(data.longUrl)) {
-    let url = await urlModel.findOne({ longUrl: data.longUrl })
-    if (url) {
-        console.log("Already exists...");
-        return res.status(409).send({
-            status: false, message: "It is Already exists", data: url})
-  }
-   else {
-    let urlCode = shortid.generate().toLowerCase(); // generating the url code in lowercase 
-   //condition if urlCode is not generated
-    if (!urlCode) {
-        return res.status(400).send({
-        status: false, message: "urlCode not generated"})
-  }
+   //Getting data from cache
+   let CachedUrlData = await GET_ASYNC(`${longUrl}`)
+   if (CachedUrlData) {
+       return res.status(200).send({ 
+        status: true, message: "success", data : CachedUrlData})
+   }
+   else{
+      let urlCode = shortid.generate().toLowerCase(); // generating the url code in lowercase 
+
+   // check if urlCode is present in database
+      let checkedUrlCode = await urlModel.findOne({urlCode:urlCode})
+       if (checkedUrlCode) {
+         return res.status(409).send({
+             status: false, message: "urlCode is already exist in our database"})}
+
+      let shortUrl = baseUrl + urlCode; // generating the short url 
+  
+   
+   //Saving data in database
+      let saveData = { longUrl, shortUrl, urlCode }
+      let saveUrl = await urlModel.create(saveData)
+        
+    await SET_ASYNC(`${longUrl}`, JSON.stringify(saveUrl ))
+
+      res.status(201).send({
+     status: true, message: "Data created successfully", data : saveUrl})
  
-// check if urlCode is present in database
-let checkedUrlCode = await urlModel.findOne({urlCode:urlCode})
-if (checkedUrlCode) {
-    return res.status(409).send({
-      status: false, message: "urlCode is already exist in our database"})}
-
-let shortUrl = baseUrl + urlCode; // creating the short url 
-   //check if short url is present or not
-    if(!shortUrl){
-        return res.status(400).send({
-          status: false, message: "shorturl is not created"})
-    }
-    data.urlCode = urlCode
-    data.shortUrl = shortUrl
-
-    //creating a document in database
-    let newUrl = await urlModel.create(data)
-    if(!newUrl){
-      return res.status(400).send({
-        status : false,message :" No data found due to invalid request"})
-  }
-
-  let finalUrl = { ...newUrl.toObject() }
-  delete finalUrl._id
-  delete finalUrl.__v
-  delete finalUrl.createdAt
-  delete finalUrl.updatedAt  
-     res.status(201).send({
-     status: true, message: "Data created successfully", data : finalUrl})
-    }
-}
-}
-catch (err) {
-    console.error(err);
-    return res.status(500).send({
-      status: false, error: err.message});
+    return  res.status(400).send({status: false, message: "Enter a valid Url"});
+    }  
+   }
+    catch (err) {
+      return res.status(500).send({
+       status: false, error: err.message});
   }
 }
 
