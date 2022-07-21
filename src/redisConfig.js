@@ -24,4 +24,3 @@ const GET_ASYNC = promisify(redisClient.GET).bind(redisClient);
 
 module.exports.SET_ASYNC = SET_ASYNC
 module.exports.GET_ASYNC = GET_ASYNC
-//module.exports = { SET_ASYNC, GET_ASYNC}
