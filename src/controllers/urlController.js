@@ -30,9 +30,22 @@ if (!isValid(longUrl)) {
      status: false, message: "long url is required and it should be null or undefined"
   })
 }
-// check if long url is in valid format 
-    if (validUrl.isUri(longUrl)) {
-    let urlCode = shortid.generate().toLowerCase(); // generating the url code in lowercase 
+
+//Getting data from cache
+let isCachedUrlData = await GET_ASYNC(`${longUrl}`)
+if (isCachedUrlData) {
+    let cachedUrlData = JSON.parse(isCachedUrlData)
+
+    return res.status(200).send({ status: true, message: "success", data: cachedUrlData })
+}
+else {
+    // check if long url is in valid format 
+    if (!validUrl.isUri(longUrl)) {
+      return res.status(400).send({
+         status: false, message: `${longUrl} is not a valid url` })
+      }
+       
+  let urlCode = shortid.generate().toLowerCase(); // generating the url code in lowercase 
 
 // check if urlCode is present in database
     let checkedUrlCode = await urlModel.findOne({urlCode:urlCode})
