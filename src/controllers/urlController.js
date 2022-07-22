@@ -27,7 +27,7 @@ const createUrl = async function(req, res) {
 //check if longUrl is not null or undefined
 if (!isValid(longUrl)) {
   return res.status(400).send({
-     status: false, message: "long url is required and it should be null or undefined"
+     status: false, message: "long url is required and it should not be null or undefined"
   })
 }
 
