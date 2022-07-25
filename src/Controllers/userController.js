@@ -221,9 +221,60 @@ catch(error){
 }
 }
 
+//===============================================UpdateUser==================================//
+
 const updateUser = async function (req, res){
     try{
-        
+        const data = req.body
+    //Validate body 
+      if (!validator.isValidBody(data)) {
+         return res.status(400).send({
+           status: false, message: "Please provide details" });
+    }
+    
+     let userIdfromParams = req.params.userId
+
+    //checks if user id is coming in request or not
+      if(!userIdfromParams){
+          return res.send({
+             status:false, message:"Error! Please give user id"})
+    }
+    //check if userid is valid
+       if (!validator.isValidObjectId(userIdfromParams)) {
+           return res.status(400).send({
+             status: false, message: `${userId} is invalid`})
+    }
+
+    const userFound = await UserModel.findOne({ _id: userIdfromParams})
+        if (!userFound) {
+            return res.status(404).send({
+                 status: false, message: "User does not exist" })
+        }
+
+     let { fname, lname, email, phone, password, address, profileImage } = data;
+
+     let updatedData = {}
+    //validation for fname
+        if (validator.isValid(fname)) {
+            if (!validator.isValidName(fname)) {
+                return res.status(400).send({ status: false, msg: "Invalid fname" })
+            }
+            updatedData['fname'] = fname
+        }
+    //validation for lname
+    if (validator.isValid(lname)) {
+        if (!validator.isValidName(lname)) {
+            return res.status(400).send({ status: false, msg: "Invalid lname" })
+        }
+        updatedData['lname'] = lname
+    }
+    //validation for mail
+    
+
+
+
+
+
     }
 }
 

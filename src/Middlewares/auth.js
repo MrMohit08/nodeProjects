@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken')
-const mongoose = require("mongoose");
 const UserModel = require("../Models/userModel")
 
 const aunthetication = async function(req,res,next){
@@ -24,7 +23,7 @@ const aunthetication = async function(req,res,next){
             status: false, message: "Authentication Failed"})
 }
       else {
-         req.token = decoded //Attribute to store the value of decoded token
+         req.bearerToken = decoded //Attribute to store the value of decoded token
           next()
     }
 })
@@ -35,5 +34,40 @@ const aunthetication = async function(req,res,next){
   }
 }
 
+//==============================================Authorization=============================//
+
+
+const authorization = async function(req,res,next){
+    try{
+        let userLoggedIn = req.bearerToken.userId   //Accessing userId from token attribute
+        let userID = req.params.userId  // pass buser id in path params
+     //check if user id is valid or not 
+     if (!validator.isValidObjectId(userIdfromParams)) {
+        return res.status(400).send({
+          status: false, message: `${userId} is invalid`})
+ }
+
+    let userAccessing = await UserModel.findById(userID)
+        if (!userAccessing) {
+            return res.status(404).send({
+                status: false, message: "Error! Please check userid and try again"})
+        }
+ 
+    if (userAccessing.userId != userLoggedIn) {
+        return res.status(403).send({
+            status: false, msg: "Error, authorization failed"})
+    }
+
+    next()
+
+    }
+    catch (err) {
+        res.status(500).send({ 
+            status: false, error: err.message })
+      }
+}
+
+
 module.exports.aunthetication = aunthetication
+module.exports.authorization = authorization
 
