@@ -269,12 +269,37 @@ const updateUser = async function (req, res){
         updatedData['lname'] = lname
     }
     //validation for mail
-    
+    if (validator.isValid(email)) {
+        if (!emailValidator.validate(email)) {
+            return res.status(400).send({ status: false, msg: "Invalid email id" })
+        }
+    const duplicatemail = await UserModel.findOne({ email: email })
+        if (duplicatemail) {
+            return res.status(400).send({ status: false, msg: "email id already exist" })
+        }
+        updatedData['email'] = email
+    }
+    //Updating of phone
+    if (validator.isValid(phone)) {
+        if (!validator.isValidMobileNo(phone)) {
+            return res.status(400).send({ status: false, msg: "Invalid phone number" })
+        }
+    // Duplicate phone
+    const duplicatePhone = await UserModel.findOne({ phone: phone })
+    if (duplicatePhone) {
+        return res.status(400).send({ status: false, msg: "phone number already exist" })
+    }
+    updatedData['phone'] = phone
+}
+    //
 
 
 
 
 
+    }
+    catch(err) {
+       
     }
 }
 
