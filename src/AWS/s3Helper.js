@@ -11,7 +11,8 @@ aws.config.update({
 let s3= new aws.S3({apiVersion: '2006-03-01'});
 
 // this function will upload file to aws and return the link
-let uploadFile = ( file) =>{     
+let uploadFile = async ( file) =>{ 
+    return new Promise(function (resolve, reject) {
 
 // setting up S3 upload parameter
  var uploadParams= {
@@ -23,15 +24,16 @@ let uploadFile = ( file) =>{
    // uploading files to the bucket 
     s3.upload(uploadParams, function (err, data){  //callback function
         if(err) {
-            console.log("Error", err)
+            return reject({ "error": err })
         }
         if (data) {
              console.log(data)
-             console.log("file upload successfully", data.Location)
+             console.log("file upload successfully")
+             return resolve(data.Location)
         }
     })
+})
 }
-
 
 
 module.exports.uploadFile = uploadFile

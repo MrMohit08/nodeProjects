@@ -108,10 +108,12 @@ if (!pv.validate(address.billing.pincode)) {
 }
   }
 }
-   let files = req.files;
-        if (files && files.length > 0) {
-            let uploadedFileURL = await aws.uploadFile(files[0]);
-            console.log(uploadedFileURL)
+    data.address = address
+
+ let files = req.files;
+    if (files && files.length > 0) {
+        let uploadedFileURL = await aws.uploadFile(files[0]);
+          console.log(uploadedFileURL)
             data.profileImage = uploadedFileURL
         }
         else{
