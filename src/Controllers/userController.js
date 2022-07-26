@@ -81,6 +81,18 @@ const createUser = async function(req, res){
 // encrypted password
   let encryptPassword = await bcrypt.hash(password, 12)
 
+
+//validation for Address
+if (!address) {
+    return res.status(400).send({
+      status: false, message: "Address is required" })
+}
+address = JSON.parse(address);
+if (typeof address != "object") {
+    return res.status(400).send({
+      status: false, message: "address should be an object" })
+}  
+
  let shippingAddress = address.shipping
  if(!shippingAddress){
     return res.status(400).send({
