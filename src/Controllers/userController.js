@@ -187,7 +187,7 @@ catch (err) {
 //========================================GET USER==================================================//
 const getUser = async function(req, res){
     try{
-        let userLoggedIn = req.bearerToken.userId //Accessing user from token attribute
+        let userLoggedIn = req.tokenData.userId //Accessing user from token attribute
         let userIdfromParams = req.params.userId //Accessing userId from params
 
 //validate userId
@@ -228,20 +228,20 @@ const updateUser = async function (req, res){
            status: false, message: "Please provide details" });
     }
     
-     let userIdfromParams = req.params.userId
+     let userID= req.params.userId
 
     //checks if user id is coming in request or not
-      if(!userIdfromParams){
+      if(!userID){
           return res.send({
              status:false, message:"Error! Please give user id"})
     }
     //check if userid is valid
-       if (!validator.isValidObjectId(userIdfromParams)) {
+       if (!validator.isValidObjectId(userID)) {
            return res.status(400).send({
-             status: false, message: `${userIdfromParams} is invalid`})
+             status: false, message: `${userID} is invalid`})
     }
 
-    const userFound = await UserModel.findOne({ _id: userIdfromParams})
+    const userFound = await UserModel.findOne({ _id: userID})
         if (!userFound) {
             return res.status(404).send({
                  status: false, message: "User does not exist" })
@@ -250,52 +250,52 @@ const updateUser = async function (req, res){
      let updatedData = {}
     //validation for fname
         if (validator.isValid(data.fname)) {
-            if (!validator.isValidName(fname)) {
+            if (!validator.isValidName(data.fname)) {
                 return res.status(400).send({ status: false, msg: "Invalid fname" })
             }
-            updatedData['fname'] = fname
+            updatedData.fname = data.fname
         }
     //validation for lname
     if (validator.isValid(data.lname)) {
-        if (!validator.isValidName(lname)) {
+        if (!validator.isValidName(data.lname)) {
             return res.status(400).send({ status: false, msg: "Invalid lname" })
         }
-        updatedData['lname'] = lname
+        updatedData.lname = data.lname
     }
     //validation for mail
-    if (validator.isValid(email)) {
-        if (!emailValidator.validate(email)) {
+    if (validator.isValid(data.email)) {
+        if (!emailValidator.validate(data.email)) {
             return res.status(400).send({ status: false, message: "Invalid email id" })
         }
-    const duplicatemail = await UserModel.findOne({ email: email })
+    const duplicatemail = await UserModel.findOne({ email: data.email })
         if (duplicatemail) {
             return res.status(400).send({ status: false, message: "email id already exist" })
         }
-        updatedData['email'] = email
+        updatedData.email = data.email
     }
     //Updating of phone
-    if (validator.isValid(phone)) {
-        if (!validator.isValidMobileNo(phone)) {
+    if (validator.isValid(data.phone)) {
+        if (!validator.isValidMobileNo(data.phone)) {
             return res.status(400).send({ status: false, message: "Invalid phone number" })
         }
    
-    const duplicatePhone = await UserModel.findOne({ phone: phone })
+    const duplicatePhone = await UserModel.findOne({ phone: data.phone })
     if (duplicatePhone) {
         return res.status(400).send({ status: false, message: "phone number already exist" })
     }
-    updatedData['phone'] = phone
+    updatedData.phone = data.phone
 }
     // Updating of password
-    if (password) {
-        if (!validator.isValid(password)) {
+    if (data.password) {
+        if (!validator.isValid(data.password)) {
             return res.status(400).send({
               status: false, message: 'password is required' })
         }
-        if (!validator.isValidPassword(password)) {
+        if (!validator.isValidPassword(data.password)) {
             return res.status(400).send({ status: false, message: "Password should be Valid min 8 character and max 15 " })
         }
-        const encrypt = await bcrypt.hash(password, 10)
-        updatedData['password'] = encrypt
+        const encrypt = await bcrypt.hash(data.password, 10)
+        updatedData.password = encrypt
     }
     //update profile Image
       let files = req.files;
@@ -304,23 +304,22 @@ const updateUser = async function (req, res){
        if (uploadedFileURL) {
             updatedData.profileImage = uploadedFileURL
         }
-      return  res.status(200).send({message: "file updated successfully", data:uploadedFileURL})
     }
     //update address
-    if (address) {
-        address = JSON.parse(address)
+    if (data.address) {
+      let address = JSON.parse(data.address)
         if(address.shipping) {
             if (address.shipping.street) {
                 if (!validator.isValid(address.shipping.street)) {
                     return res.status(400).send({ status: false, message: 'Please provide street' })
                 }
-                updatedData['address.shipping.street'] = address.shipping.street
+                updatedData.address.shipping.street = address.shipping.street
             }
             if(address.shipping.city) {
                 if (!validator.isValid(address.shipping.city)) {
                     return res.status(400).send({ status: false, message: 'Please provide city' })
                 }
-                updatedData['address.shipping.city'] = address.shipping.city
+                updatedData.address.shipping.city = address.shipping.city
             }
             if (address.shipping.pincode) {
                 if (typeof address.shipping.pincode !== 'number') {
@@ -330,7 +329,7 @@ const updateUser = async function (req, res){
             if (!pv.validate(address.shipping.pincode)) {
                     return res.status(400).send({ status: false, msg: "Invalid Shipping pincode" })
                 }
-                updatedData['address.shipping.pincode'] = address.shipping.pincode
+                updatedData.address.shipping.pincode = address.shipping.pincode
             }
         }
         if (address.billing) {
@@ -338,13 +337,13 @@ const updateUser = async function (req, res){
                 if (!validator.isValid(address.billing.street)) {
                     return res.status(400).send({ status: false, message: 'Please provide street' })
                 }
-                updatedData['address.billing.street'] = address.billing.street
+                updatedData.address.billing.street = address.billing.street
             }
             if (address.billing.city) {
                 if (!validator.isValid(address.billing.city)) {
                     return res.status(400).send({ status: false, message: 'Please provide city' })
                 }
-                updatedData['address.billing.city'] = address.billing.city
+                updatedData.address.billing.city = address.billing.city
             }
             if (address.billing.pincode) {
                 if (typeof address.billing.pincode !== 'number') {
@@ -354,11 +353,11 @@ const updateUser = async function (req, res){
                 if (!pv.validate(address.billing.pincode)) {
                     return res.status(400).send({ status: false, msg: "Invalid billing pincode" })
                 }
-                updatedData['address.billing.pincode'] = address.billing.pincode
+                updatedData.address.billing.pincode = address.billing.pincode
             }
         }
     }
-     const updated = await UserModel.findOneAndUpdate({ _id: userIdfromParams}, updatedData, { new: true })
+     const updated = await UserModel.findOneAndUpdate({ _id: userID}, updatedData, { new: true })
         return res.status(200).send({
              status: true, data: updated}) 
 }
