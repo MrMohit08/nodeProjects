@@ -15,133 +15,116 @@ const createUser = async function(req, res){
        return res.status(400).send({
          status: false, msg: "Please provide details" });
     }
-
-    let { fname, lname, email, password, phone, address } = data    
-    
 //validate first name
-   if(!validator.isValid(fname)) {
+   if(!validator.isValid(data.fname)) {
       return res.status(400).send({
          status: false, message: "fname must be present" })
 }
-   if(!validator.isValidName(fname)) {
+   if(!validator.isValidName(data.fname)) {
       return res.status(400).send({
          status: false, msg: "Invalid fname" })
 }
 //validate last name
-   if (!validator.isValid(lname)) {
+   if (!validator.isValid(data.lname)) {
       return res.status(400).send({
          status: false, message: "lname must be present" })
 }
-   if (!validator.isValidName(lname)) {
+   if (!validator.isValidName(data.lname)) {
       return res.status(400).send({
          status: false, msg: "Invalid lname" })
 }
 //validate email
-   if (!validator.isValid(email)) {
+   if (!validator.isValid(data.email)) {
       return res.status(400).send({
          status: false, message: "email must be present" })
 }
 //validate email is in correct format 
-   if (!emailValidator.validate(email)) {
+   if (!emailValidator.validate(data.email)) {
     return res.status(400).send({
         status: false, message: "Email-Id is invalid"})
 }
 //Checks For Unique Email Id
-   email = email.toLowerCase().trim()
+  let email = data.email.toLowerCase()
         let checkEmail = await UserModel.findOne({ email });
         if (checkEmail) {
             return res.status(400).send({
               status: false, message: ` ${email} mail is already registered` })
         }
 // Validate phone
-   if (!validator.isValid(phone)) {
+   if (!validator.isValid(data.phone)) {
       return res.status(400).send({
         status: false, message: "phone must be present" })
 }
 // Validation of phone number
-   if (!validator.isValidMobileNo(phone)) {
+   if (!validator.isValidMobileNo(data.phone)) {
        return res.status(400).send({
          status: false, message: "Invalid phone number" })
 }
 //check for unique phone no
-   let duplicatePhone = await UserModel.findOne({ phone });
+   let duplicatePhone = await UserModel.findOne({phone: data.phone});
      if (duplicatePhone) {
        return res.status(400).send({
          status: false, message: `${phone} phone is already used` })
 }
 //validation for password
-   if (!validator.isValid(password)) {
+   if (!validator.isValid(data.password)) {
        return res.status(400).send({
          status: false, message: "password must be present" })
 }
-   if (!validator.isValidPassword(password)) {
+   if (!validator.isValidPassword(data.password)) {
        return res.status(400).send({
           status: false, message: "Invalid password" })
 }
 // encrypted password
-  let encryptPassword = await bcrypt.hash(password, 12)
-
+  let encryptPassword = await bcrypt.hash(data.password, 12)
+  data.password = encryptPassword;
 
 //validation for Address
-if (!address) {
-    return res.status(400).send({
-      status: false, message: "Address is required" })
-}
-address = JSON.parse(address);
-if (typeof address != "object") {
-    return res.status(400).send({
-      status: false, message: "address should be an object" })
-}  
-
- let shippingAddress = address.shipping
- if(!shippingAddress){
-    return res.status(400).send({
-         status: false, message: "Shipping address is required" })
-}
+if (data.address) {
+  let address = JSON.parse(data.address);
+ 
+if(address.shipping){
 //Validate street, city, pincode of shipping
-    if (!validator.isValid(shippingAddress.street && shippingAddress.city && shippingAddress.pincode)) {
+     if (!validator.isValid(address.shipping.street && address.shipping.city && address.shipping.pincode)) {
         return res.status(400).send({
           status: false, message: "Shipping address details is/are missing" })
 }
 // Validate shipping pincode
-    if (!pv.validate(pincode)) {
+    if (!pv.validate(address.shipping.pincode)) {
         return res.status(400).send({
            status: false, message: "Pincode is invalid"})
 }
- 
- let billingAddress = address.billing
-  if(!billingAddress){
-    return res.status(400).send({
-        status: false, message: "billing address must be present" })
-  }
-//Validate street, city, pincode of billing
-   if (!validator.isValid(billingAddress.street && billingAddress.city && billingAddress.pincode)) {
-        return res.status(400).send({
-          status: false, message: "Billing address details is/are missing" })
+}
+  if(address.billing){
+   //Validate street, city, pincode of billing
+     if (!validator.isValid(address.billing.street && address.billing.city && address.billing.pincode)) {
+          return res.status(400).send({
+            status: false, message: "Billing address details is/are missing" })
 }
 // Validate billing pincode
-if (!pv.validate(pincode)) {
+if (!pv.validate(address.billing.pincode)) {
     return res.status(400).send({
        status: false, message: "Pincode is invalid"})
+}
+  }
 }
    let files = req.files;
         if (files && files.length > 0) {
             let uploadedFileURL = await aws.uploadFile(files[0]);
-            res.status(201).send({message: "file uploaded successfully", data:uploadedFileURL})
+            console.log(uploadedFileURL)
+            data.profileImage = uploadedFileURL
         }
         else{
             res.status(400).send({message: "no file found"})
         }
-      profileImage = uploadedFileURL
+       
 //After passing all the validation create user data
-    let userData = { fname, lname, email, profileImage, phone, password: encryptPassword, address }
-
-        let savedData = await UserModel.create(userData)
-            return res.status(201).send({
-              status: true, message: "User created successfully", data: savedData })
+    let savedData = await UserModel.create(data)
+        return res.status(201).send({
+          status: true, message: "User created successfully", data: savedData })
     }
     catch(err) {
-        console.log("Erorr From Create Author :", err.message)
+        console.log("Erorr From Create User :", err.message)
         res.status(500).send({
             status: false, message: err.message})
     }

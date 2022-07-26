@@ -42,9 +42,9 @@ const authorization = async function(req,res,next){
         let userLoggedIn = req.bearerToken.userId   //Accessing userId from token attribute
         let userID = req.params.userId  // pass buser id in path params
      //check if user id is valid or not 
-     if (!validator.isValidObjectId(userIdfromParams)) {
+     if (!validator.isValidObjectId(userID)) {
         return res.status(400).send({
-          status: false, message: `${userId} is invalid`})
+          status: false, message: `${userID} is invalid`})
  }
 
     let userAccessing = await UserModel.findById(userID)
