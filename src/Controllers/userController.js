@@ -108,9 +108,7 @@ if (!pv.validate(address.billing.pincode)) {
 }
   }
 }
-    data.address = address
-
- let files = req.files;
+   let files = req.files;
     if (files && files.length > 0) {
         let uploadedFileURL = await aws.uploadFile(files[0]);
           console.log(uploadedFileURL)
