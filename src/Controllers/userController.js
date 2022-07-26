@@ -134,21 +134,20 @@ if (!pv.validate(address.billing.pincode)) {
 const userLogin = async function(req,res){
    try{
      let data = req.body
-     let userName = data.email
-     let password = data.password
+     const {email, password} = data;
 
 //Validate body 
   if (!validator.isValidBody(data)) {
     return res.status(400).send({
-      status: false, msg: "Please provide details" });
+      status: false, message: "Please provide details" });
  }
 //if email id and username is not present  
-  if (!userName || !password) {
+  if (!email || !password) {
       return res.status(400).send({
         status: false, message: "please enter username or password"})
 }
 //validate mail
-   if (!emailValidator.validate(userName)) {
+   if (!emailValidator.validate(email)) {
        return res.status(400).send({
           status: false, message: "Email-Id is invalid"})
 }
@@ -158,10 +157,10 @@ const userLogin = async function(req,res){
            status: false, message: "Invalid password" })
 }
 
-let userData = await AuthorModel.findOne({ email: userName, password: password});
+let userData = await UserModel.findOne({email});
 if (!userData)
     return res.status(400).send({
-        status: false, message: "invalid usename or password",})
+        status: false, message: "invalid login mail"})
     
  const match  = await bcrypt.compare(password, userData.password);
  if (!match) {
@@ -176,8 +175,9 @@ if (!userData)
    },
    "My name is Mohit"   // secret key 
 )
+res.setHeader("x-api-key", token); 
 res.status(200).send({
-    status: true, message: "user login successful", data: { userId: userId, token: token }})
+    status: true, message: "user login successful", data: { userId: userData._id, token: token }})
 }
 catch (err) {
     res.status(500).send({
@@ -238,7 +238,7 @@ const updateUser = async function (req, res){
     //check if userid is valid
        if (!validator.isValidObjectId(userIdfromParams)) {
            return res.status(400).send({
-             status: false, message: `${userId} is invalid`})
+             status: false, message: `${userIdfromParams} is invalid`})
     }
 
     const userFound = await UserModel.findOne({ _id: userIdfromParams})
@@ -247,18 +247,16 @@ const updateUser = async function (req, res){
                  status: false, message: "User does not exist" })
         }
 
-     let { fname, lname, email, phone, password, address, profileImage } = data;
-
      let updatedData = {}
     //validation for fname
-        if (validator.isValid(fname)) {
+        if (validator.isValid(data.fname)) {
             if (!validator.isValidName(fname)) {
                 return res.status(400).send({ status: false, msg: "Invalid fname" })
             }
             updatedData['fname'] = fname
         }
     //validation for lname
-    if (validator.isValid(lname)) {
+    if (validator.isValid(data.lname)) {
         if (!validator.isValidName(lname)) {
             return res.status(400).send({ status: false, msg: "Invalid lname" })
         }
@@ -267,23 +265,23 @@ const updateUser = async function (req, res){
     //validation for mail
     if (validator.isValid(email)) {
         if (!emailValidator.validate(email)) {
-            return res.status(400).send({ status: false, msg: "Invalid email id" })
+            return res.status(400).send({ status: false, message: "Invalid email id" })
         }
     const duplicatemail = await UserModel.findOne({ email: email })
         if (duplicatemail) {
-            return res.status(400).send({ status: false, msg: "email id already exist" })
+            return res.status(400).send({ status: false, message: "email id already exist" })
         }
         updatedData['email'] = email
     }
     //Updating of phone
     if (validator.isValid(phone)) {
         if (!validator.isValidMobileNo(phone)) {
-            return res.status(400).send({ status: false, msg: "Invalid phone number" })
+            return res.status(400).send({ status: false, message: "Invalid phone number" })
         }
    
     const duplicatePhone = await UserModel.findOne({ phone: phone })
     if (duplicatePhone) {
-        return res.status(400).send({ status: false, msg: "phone number already exist" })
+        return res.status(400).send({ status: false, message: "phone number already exist" })
     }
     updatedData['phone'] = phone
 }
@@ -304,7 +302,7 @@ const updateUser = async function (req, res){
        if (files && files.length > 0) {
        let uploadedFileURL = await aws.uploadFile(files[0]);
        if (uploadedFileURL) {
-            updatedData['profileImage'] = uploadedFileURL
+            updatedData.profileImage = uploadedFileURL
         }
       return  res.status(200).send({message: "file updated successfully", data:uploadedFileURL})
     }
@@ -360,7 +358,7 @@ const updateUser = async function (req, res){
             }
         }
     }
-     const updated = await UserModel.findOneAndUpdate({ _id: userId }, updatedData, { new: true })
+     const updated = await UserModel.findOneAndUpdate({ _id: userIdfromParams}, updatedData, { new: true })
         return res.status(200).send({
              status: true, data: updated}) 
 }
