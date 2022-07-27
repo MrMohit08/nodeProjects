@@ -36,6 +36,12 @@ const isValidPassword = function (value) {
     }
     return true
 };
+//validation for size
+const isValidSize = function(size) {
+    let sizes = ["S", "XS", "M", "X", "L", "XXL", "XL"];
+    return sizes.includes(size);
+  }
+  
 
 
   module.exports.isValid = isValid
@@ -44,3 +50,4 @@ const isValidPassword = function (value) {
   module.exports.isValidName = isValidName 
   module.exports.isValidMobileNo = isValidMobileNo
   module.exports.isValidPassword = isValidPassword
+  module.exports.isValidSize = isValidSize

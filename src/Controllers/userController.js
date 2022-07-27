@@ -195,6 +195,7 @@ const getUser = async function(req, res){
        return res.status(400).send({ 
          status: false, message: "Please Provide User Id" })
 }
+//validate if user id is valid or not 
      if (!(validator.isValidObjectId(userIdfromParams))) {
          return res.status(400).send({
             status: false, message: "invalid userId"})
