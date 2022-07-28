@@ -119,17 +119,40 @@ const getProduct = async function(req, res){
      query.title = {$regex: name}   
 }  
 //validation for  price greater than
-//if()    
-        
-
-         
-         
-
-
+   if(priceGreaterThen) {
+     if(!validator.isValid(priceGreaterThen)){
+        return res.status(400).send({status: false, message:"plz Enter a value"})
     }
-    catch(err){
-        res.status(500).send({
-            message: "Error", error: err.message})
+    query.price = { $gt: priceGreaterThen}
+} 
+//validation for  price greater than
+   if(priceLessThen) {
+     if(!validator.isValid(priceLessThen)){
+        return res.status(400).send({status: false, message:"plz Enter a value"})
+   }
+    query.price = { $lt: priceLessThen}
+}
+  if(priceGreaterThen && priceLessThen){
+    query.price= { '$gt': priceGreaterThen, '$lt': priceLessThen }
+  }
+  //sorting
+  if (priceSort) {
+    if (priceSort != '-1' && priceSort != '1') {
+        return res.status(400).send({ status: false, message: "You can only use 1 for Ascending and -1 for Descending Sorting" })
+    }
+}
+ 
+  let getAllProduct = await ProductModel.find(query).sort({ price: priceSort })
+   if (!(getAllProduct.length > 0)) {
+      return res.status(404).send({ 
+        status: false, message: "Products Not Found" })
+}
+return res.status(200).send({
+     status: true, count: getAllProduct.length, message: "Success", data: getAllProduct })
+}
+  catch(err){
+    res.status(500).send({
+       message: "Error", error: err.message})
     }
 }
 
@@ -188,6 +211,40 @@ const updateProduct = async function(req, res){
     try{
         const data = req.body
         const productId = req.params.productId
+    //check if product is exist or not
+        const product = await ProductModel.findById(productId);
+        if(!product){
+            return res.status(404).send({
+             status: false, message: "Product not found"})
+        }
+    //check if product is deleted or not
+    if (product.isDeleted == "true") {
+        return res.status(404).send({
+          status: false, message: "product is already deleted" })
+    }
+    //check valid product id 
+    if (!validator.isValidObjectId(productId)) {
+        return res.status(400).send({
+          status: false, message: "please enter valid productId" })
+    }
+    //Validate body 
+     if (!validator.isValidBody(data)) {
+       return res.status(400).send({
+          status: false, msg: "Please provide details" });
+ }
+const { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data;
+     
+ //validation for title
+  if(!validator.isValid(title)){
+    const isTitleAlreadyUsed = await ProductModel.findOne({title: title });
+            if (isTitleAlreadyUsed){ 
+                return res.status(400).send({
+                  status: false, Message: `title, ${title} already exist `}) }
+                  product.title = title
+  }
+  //validation for description
+   
+
     }
     catch(err){
         res.status(500).send({
