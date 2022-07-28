@@ -132,3 +132,65 @@ const getProduct = async function(req, res){
             message: "Error", error: err.message})
     }
 }
+
+//==========================================getById=========================================//
+
+const getProductById = async function (req, res) {
+    try {
+        let productId = req.params.productId
+    //check wheather objectId is valid or not--
+         if (!validator.isValidObjectId(productId)) {
+            return res.status(400).send({
+              status: false, message: "please enter valid productId" })
+        }
+        const searchProduct = await ProductModel.findOne({ _id: productId, isDeleted: false })
+        if (!searchProduct){
+             return res.status(404).send({ status: false, Message: '😩 prouct does not exists' })
+ }
+        res.status(200).send({ status: true, Message: '✅ Success', data: searchProduct })
+    }
+    catch(err){
+        res.status(500).send({
+            message: "Error", error: err.message})
+    }
+}
+
+//-----------------------------------------delete product=================================//
+ 
+const deleteProductById=async function(req,res){
+    try {
+        const productId = req.params.productId;
+        //check wheather objectId is valid or not--
+        if (!validator.isValidObjectId(productId)) {
+            return res.status(400).send({
+              status: false, message: "please enter valid productId" })
+        }
+        const product = await ProductModel.findById(productId)
+        if (!product){
+             return res.status(404).send({ status: !true, Message: "😩 Product information unavailable!" })
+         }
+        if (product.isDeleted){ return res.status(400).send({ status: !true, Message: "😩 Product already deleted!" })
+ }
+   product.isDeleted = true;
+   product.deletedAt = new Date();
+   await product.save();
+      res.status(200).send({ status: true, Message: "Product deleted successfully!" })
+}
+    catch(err){
+        res.status(500).send({
+            message: "Error", error: err.message})
+    }
+}
+
+//==========================================Product update======================================//
+
+const updateProduct = async function(req, res){
+    try{
+        const data = req.body
+        const productId = req.params.productId
+    }
+    catch(err){
+        res.status(500).send({
+            message: "Error", error: err.message})
+    }
+}
