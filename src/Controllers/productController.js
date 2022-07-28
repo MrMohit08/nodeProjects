@@ -59,9 +59,9 @@ const createProduct = async function(req, res){
 }   
 //validation for available sizes field
     if(availableSizes) {
-      if (!isValidSize(availableSizes)) {
+      if (!validator.isValidSize(availableSizes)) {
          return res.status(400).send({
-            status: false, message: "Please Provide Available Sizes from S,XS,M,X,L,XXL,XL",});
+            status: false, message: "Please Provide Available Sizes from S,XS,M,X,L,XXL,XL"});
     }
 }
 //validations for installments
@@ -96,10 +96,32 @@ return res.status(201).send({
 
 const getProduct = async function(req, res){
     try{
-        let filterQuery = req.query;
-        filterQuery.isDeleted = false;
+      let filterQuery = req.query;
+      let query = {}
+      let { size, name, priceGreaterThen, priceLessThen, priceSort } = filterQuery;
+        
+//validation for size
+   if(size){       
+     if(!validator.isValid(size)){
+        return res.status(400).send({status: false, message:"plz Enter Size"})
+   }
+     if(!validator.isValidSize(size)) {
+        return res.status(400).send({
+           status: false, message: "Please Provide Available Sizes from S,XS,M,X,L,XXL,XL"});
+   }
+      query.availableSizes = size
+}
+//validation for name
+   if(name){       
+     if(!validator.isValid(name)){
+       return res.status(400).send({status: false, message:"plz Enter a valid name"})
+  }  
+     query.title = {$regex: name}   
+}  
+//validation for      
+        
 
-        let queryDataSize = filterQuery.size;  
+         
          
 
 
