@@ -242,8 +242,8 @@ const updateUser = async function (req, res){
              status: false, message: `${userID} is invalid`})
     }
 
-    const userFound = await UserModel.findOne({ _id: userID})
-        if (!userFound) {
+    const isuserExist = await UserModel.findOne({ _id: userID})
+        if (!isuserExist) {
             return res.status(404).send({
                  status: false, message: "User does not exist" })
         }
@@ -307,6 +307,7 @@ const updateUser = async function (req, res){
         }
     }
     //update address
+    const addr = JSON.parse(JSON.stringify(isuserExist.address))
     if (data.address) {
       let address = JSON.parse(data.address)
         if(address.shipping) {
@@ -314,13 +315,13 @@ const updateUser = async function (req, res){
                 if (!validator.isValid(address.shipping.street)) {
                     return res.status(400).send({ status: false, message: 'Please provide street' })
                 }
-                updatedData.address.shipping.street = address.shipping.street
+                addr.shipping.street = address.shipping.street
             }
             if(address.shipping.city) {
                 if (!validator.isValid(address.shipping.city)) {
                     return res.status(400).send({ status: false, message: 'Please provide city' })
                 }
-                updatedData.address.shipping.city = address.shipping.city
+                addr.shipping.city = address.shipping.city
             }
             if (address.shipping.pincode) {
                 if (typeof address.shipping.pincode !== 'number') {
@@ -330,7 +331,7 @@ const updateUser = async function (req, res){
             if (!pv.validate(address.shipping.pincode)) {
                     return res.status(400).send({ status: false, msg: "Invalid Shipping pincode" })
                 }
-                updatedData.address.shipping.pincode = address.shipping.pincode
+                addr.shipping.pincode = address.shipping.pincode
             }
         }
         if (address.billing) {
@@ -338,13 +339,13 @@ const updateUser = async function (req, res){
                 if (!validator.isValid(address.billing.street)) {
                     return res.status(400).send({ status: false, message: 'Please provide street' })
                 }
-                updatedData.address.billing.street = address.billing.street
+                addr.billing.street = address.billing.street
             }
             if (address.billing.city) {
                 if (!validator.isValid(address.billing.city)) {
                     return res.status(400).send({ status: false, message: 'Please provide city' })
                 }
-                updatedData.address.billing.city = address.billing.city
+                addr.billing.city = address.billing.city
             }
             if (address.billing.pincode) {
                 if (typeof address.billing.pincode !== 'number') {
@@ -354,9 +355,10 @@ const updateUser = async function (req, res){
                 if (!pv.validate(address.billing.pincode)) {
                     return res.status(400).send({ status: false, msg: "Invalid billing pincode" })
                 }
-                updatedData.address.billing.pincode = address.billing.pincode
+                 addr.billing.pincode = address.billing.pincode
             }
         }
+        updatedData.address = addr 
     }
      const updated = await UserModel.findOneAndUpdate({ _id: userID}, updatedData, { new: true })
         return res.status(200).send({

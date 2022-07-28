@@ -118,7 +118,8 @@ const getProduct = async function(req, res){
   }  
      query.title = {$regex: name}   
 }  
-//validation for      
+//validation for  price greater than
+//if()    
         
 
          
