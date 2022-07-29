@@ -4,7 +4,7 @@ const aws = require('../AWS/s3Helper')
 
 const createProduct = async function(req, res){
     try{
-         let data = req.body;
+         let data = req.body; 
          let { title,description,price,currencyId,currencyFormat,style,availableSizes,installments} = data;
 //Validate body 
     if (!validator.isValidBody(data)) {
@@ -123,14 +123,14 @@ const getProduct = async function(req, res){
      if(!validator.isValid(priceGreaterThen)){
         return res.status(400).send({status: false, message:"plz Enter a value"})
     }
-    query.price = { $gt: priceGreaterThen}
+    query.price = { $gte: priceGreaterThen}
 } 
 //validation for  price greater than
    if(priceLessThen) {
      if(!validator.isValid(priceLessThen)){
         return res.status(400).send({status: false, message:"plz Enter a value"})
    }
-    query.price = { $lt: priceLessThen}
+    query.price = { $lte: priceLessThen}
 }
   if(priceGreaterThen && priceLessThen){
     query.price= { '$gt': priceGreaterThen, '$lt': priceLessThen }
@@ -232,22 +232,77 @@ const updateProduct = async function(req, res){
        return res.status(400).send({
           status: false, msg: "Please provide details" });
  }
-const { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments } = data;
+const { title, description, price, currencyId, isFreeShipping, style, availableSizes, installments } = data;
      
  //validation for title
   if(!validator.isValid(title)){
     const isTitleAlreadyUsed = await ProductModel.findOne({title: title });
             if (isTitleAlreadyUsed){ 
                 return res.status(400).send({
-                  status: false, Message: `title, ${title} already exist `}) }
-                  product.title = title
+                  status: false, Message: `title, ${title} already exist `})
+     }
+         product.title = title
   }
   //validation for description
+   if(!validator.isValid(description)){
+    product.description = description
+   }
+//validation for price
+   if(price){
+     if(!validator.isValid(price)){
+    return res.status(400).send({
+        status: false, message: "price details must be present and it should be in number"})
+     }
+
+    if (!/^([0-9]{0,2}((.)[0-9]{0,2}))$/.test(price)) {
+        return res.status(400).send({
+        status: false, message: "Please Provide Valid Price" })
+     } 
+       product.price = price
+}
+//validation for style
+    if(!validator.isValid(style)){
+         product.style = style
+   }
+//validation for currency ID
+   if(currencyId){
+    if (!validator.isValid(currencyId)) {
+        return res.status(400).send({
+          status: false, message: "curreny must be present" });
+  }
+    if (currencyId != "INR"){
+       return res.status(400).send({
+         status: false, message: "At this time only 'INR' currency is allowed",});
+       }
+      product.currencyId = currencyId;
+}
+//validation for installment
+   if(installments){
+    if (!!validator.isValid(installments)) {
+        return res.status(400).send({
+          status: false, msg: "installments must be present" });
+      }
+    if (!/^(0|[1-9][0-9]*)$/.test(installments)){
+        return res.status(400).send({status: false, message: "please enter proper installments"})
+    }
+    product.installments = installments;
+   }
+  //validation for product image
+     let files = req.files;
+      if (files && files.length > 0){
+        if(!validator.acceptFileType(productImage[0], 'image/jpeg', 'image/png')){
+            return res.status(400).send({
+              status: false, Message: " we accept jpg, jpeg or png as product image only!" })
+        }
+        const ProductPicture = await uploadFile(productImage[0])
+        product.productImage = ProductPicture
+      }
+    //
    
 
     }
     catch(err){
         res.status(500).send({
             message: "Error", error: err.message})
-    }
+    }r
 }

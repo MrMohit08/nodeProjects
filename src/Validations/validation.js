@@ -41,7 +41,11 @@ const isValidSize = function(size) {
     let sizes = ["S", "XS", "M", "X", "L", "XXL", "XL"];
     return sizes.includes(size);
   }
-  
+//validation for image file
+const acceptFileType = (file, ...types) => {
+    return types.indexOf(file.mimetype) !== -1 ? true : false
+}
+
 
 
   module.exports.isValid = isValid
@@ -51,3 +55,4 @@ const isValidSize = function(size) {
   module.exports.isValidMobileNo = isValidMobileNo
   module.exports.isValidPassword = isValidPassword
   module.exports.isValidSize = isValidSize
+  module.exports.acceptFileType = acceptFileType
