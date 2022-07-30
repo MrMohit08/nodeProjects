@@ -278,7 +278,7 @@ const { title, description, price, currencyId, isFreeShipping, style, availableS
 }
 //validation for installment
    if(installments){
-    if (!!validator.isValid(installments)) {
+    if (!validator.isValid(installments)) {
         return res.status(400).send({
           status: false, msg: "installments must be present" });
       }
@@ -297,12 +297,18 @@ const { title, description, price, currencyId, isFreeShipping, style, availableS
         const ProductPicture = await uploadFile(productImage[0])
         product.productImage = ProductPicture
       }
-    //
+    //validation for available sizez
+    if (!validator.isValid(availableSizes)) {
+      let availableSizesobj = JSON.parse(availableSizes)
+        if (!Array.isArray(availableSizesobj)) return res.status(400).send({
+             status: false, Message: `☹️ in availableSizes, invalid array !` })
+    }
+    
    
 
     }
     catch(err){
         res.status(500).send({
             message: "Error", error: err.message})
-    }r
+    }
 }
