@@ -299,38 +299,63 @@ const updateUser = async function (req, res){
         user.password = encrypt
     }
      // Validate address
-   if (address) {
-       address = JSON.parse(address);
-      if (typeof address != "object") {
-         return res.status(400).send({ status: false, message: "address should be an object" })
- }
-         if(address.shipping){
-    //Validate street, city, pincode of shipping
-          if (!validator.isValid(address.shipping.street && address.shipping.city && address.shipping.pincode)) {
-                return res.status(400).send({
-                  status: false, message: "Shipping address details is/are missing" })
-        }
-        // Validate shipping pincode
-            if (!pv.validate(address.shipping.pincode)) {
-                return res.status(400).send({
-                   status: false, message: "Pincode is invalid"})
-        }
-            user.address.shipping = address.shipping
-        }
-        if(address.billing){
-            //Validate street, city, pincode of billing
-              if (!validator.isValid(address.billing.street && address.billing.city && address.billing.pincode)) {
-                   return res.status(400).send({
-                     status: false, message: "Billing address details is/are missing" })
-         }
-         // Validate billing pincode
-         if (!pv.validate(address.billing.pincode)) {
+     address = JSON.parse(address);
+     if (address in data) {
+       if (address.shipping) {
+         console.log(address.shipping)
+         if (address.shipping.street) {
+           if (!validator.isValidName(address.shipping.street)) {
              return res.status(400).send({
-                status: false, message: "Pincode is invalid"})
+               status: false, message: "Please provide valid street name" });
+           }
          }
-             user.address.billing = address.billing
+         if (address.shipping.city) {
+           if (!validator.isValidName(address.shipping.city)) {
+             return res.status(400).send({
+                 status: false, message: "Please provide city" });
+           }
+         }
+         if (address.shipping.pincode) {
+           if (typeof address.shipping.pincode !== "number") {
+             return res.status(400).send({
+                status: false, message: "Please provide pincode in number format",
+             });
+           }
+           // Validate shipping pincode
+           if (!pv.validate(address.shipping.pincode)) {
+             return res.status(400).send({
+                status: false, msg: "Invalid Shipping pincode" });
+           }
+         }
+       }
+       if (address.billing) {
+         console.log(address.billing)
+         if (address.billing.street) {
+           if (!validator.isValidName(address.billing.street)) {
+             return res.status(400).send({
+                status: false, message: "Please provide valid street" });
+           }
+         }
+         if (address.billing.city) {
+           if (!validator.isValidName(address.billing.city)) {
+             return res.status(400).send({
+                status: false, message: "Please provide valid city" });
+           }
+         }
+         if (address.billing.pincode) {
+           if (typeof address.billing.pincode !== "number") {
+             return res.status(400).send({
+               status: false, message: "Please provide pincode in number format"});
+           }
+           // Validate billing pincode
+           if (!pv.validate(address.billing.pincode)) {
+             return res.status(400).send({
+                status: false, msg: "Invalid billing pincode" });
+           }
+         }
+       }
      }
-    }
+     user.address = address
   //update profile Image
     let files = req.files;
     if (files && files.length > 0) {

@@ -180,7 +180,7 @@ const getProductById = async function (req, res) {
 
 //-----------------------------------------delete product=================================//
  
-const deleteProductById=async function(req,res){
+const deleteProductById = async function(req,res){
     try {
         const productId = req.params.productId;
         //check wheather objectId is valid or not--
@@ -300,15 +300,26 @@ const { title, description, price, currencyId, isFreeShipping, style, availableS
     //validation for available sizez
     if (!validator.isValid(availableSizes)) {
       let availableSizesobj = JSON.parse(availableSizes)
-        if (!Array.isArray(availableSizesobj)) return res.status(400).send({
+        if (!Array.isArray(availableSizesobj)){
+             return res.status(400).send({
              status: false, Message: `☹️ in availableSizes, invalid array !` })
+        }
+        product.availableSizesobj = availableSizes
     }
-    
-   
-
+      await product.save();
+       return res.status(200).send({
+            status: true, message: "✅ Product info updated successfully!", data: product });
     }
     catch(err){
         res.status(500).send({
             message: "Error", error: err.message})
     }
 }
+
+module.exports.createProduct = createProduct
+module.exports.getProduct = getProduct
+module.exports.getProductById = getProductById
+module.exports.deleteProductById = deleteProductById
+module.exports.updateProduct = updateProduct 
+
+
