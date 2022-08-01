@@ -334,14 +334,19 @@ const updateUser = async function (req, res){
              return res.status(400).send({ status: false, message: "ProfileImage is missing ! " }) }
 }
 //update profile Image
-    let files = req.files;
-    if (files && files.length > 0) {
-    let uploadedFileURL = await aws.uploadFile(files[0]);
-    if (uploadedFileURL) {
-         data.profileImage = uploadedFileURL
-     }
- }
- //After passing all the validation user data is updated
+let profileImage = req.files;
+if (!(profileImage && profileImage.length)) {
+     return res.status(400).send({ status: false, message: "Please Provide Profile Image" })
+}
+if(!validator.acceptFileType(profileImage[0], 'image/jpeg', 'image/png')){
+      return res.status(400).send({
+        status: false, Message: " we accept jpg, jpeg or png as product image only!" })
+}
+let updateFileURL = await aws.uploadFile(profileImage[0]);
+console.log(updateFileURL)
+data.profileImage = updateFileURL
+
+//After passing all the validation user data is updated
     let Updatedata = await UserModel.findOneAndUpdate({ _id: userID }, data, { new: true })
     res.status(201).send({
         status: true, message: "User profile Updated", data: Updatedata })

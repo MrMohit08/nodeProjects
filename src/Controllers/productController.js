@@ -72,19 +72,19 @@ const createProduct = async function(req, res){
     if (!/^(0|[1-9][0-9]*)$/.test(installments)) {
     return res.status(400).send({ status: false, message: "Please Provide Valid details" })
 }
-let files = req.files;
-    if (files && files.length > 0) {
-        let uploadedFileURL = await aws.uploadFile(files[0]);
-          console.log(uploadedFileURL)
-            data.productImage = uploadedFileURL
+//Validation for profile image
+    let image = req.files;
+     if (!(image && image.length)) {
+       return res.status(400).send({ status: false, message: "Please Provide Profile Image" })
 }
-        else{
-            res.status(400).send({message: "no file found"})
-    }
+     let uploadedFileURL = await aws.uploadFile(files[0]);
+        console.log(uploadedFileURL)
+        data.productImage = uploadedFileURL
+
 // After passing all the validation create document for product  
 let Product = await ProductModel.create(data);
-return res.status(201).send({
-  status: true,message: "Product saved successfully",data: Product}); 
+    return res.status(201).send({
+       status: true,message: "Product saved successfully",data: Product}); 
 }
     catch(err){
         res.status(500).send({
@@ -227,25 +227,27 @@ const updateProduct = async function(req, res){
         return res.status(400).send({
           status: false, message: "please enter valid productId" })
     }
-    //Validate body 
+    //Validate req body to check if data is coming or not
      if (!validator.isValidBody(data)) {
        return res.status(400).send({
-          status: false, msg: "Please provide details" });
+          status: false, message: "Insert Data : BAD REQUEST"  });
  }
 const { title, description, price, currencyId, isFreeShipping, style, availableSizes, installments } = data;
      
- //validation for title
-  if(!validator.isValid(title)){
-    const isTitleAlreadyUsed = await ProductModel.findOne({title: title });
-            if (isTitleAlreadyUsed){ 
-                return res.status(400).send({
-                  status: false, Message: `title, ${title} already exist `})
+//validation for title
+  if(title){
+     if(!validator.isValidName(title)) {
+        return res.status(400).send({ status: false, message: "wrong title"})}
      }
-         product.title = title
-  }
-  //validation for description
-   if(!validator.isValid(description)){
-    product.description = description
+//check if title is already exist
+    const isTitleAlreadyUsed = await ProductModel.findOne({title: title });
+     if (isTitleAlreadyUsed){ 
+        return res.status(400).send({status: false, Message: `title, ${title} already exist `})
+     }
+//validation for description
+   if(description){
+     if(!validator.isValidName(description)){
+        return res.status(400).send({ status: false, message: "wrong description"})}
    }
 //validation for price
    if(price){
@@ -253,17 +255,20 @@ const { title, description, price, currencyId, isFreeShipping, style, availableS
     return res.status(400).send({
         status: false, message: "price details must be present and it should be in number"})
      }
-
-    if (!/^([0-9]{0,2}((.)[0-9]{0,2}))$/.test(price)) {
-        return res.status(400).send({
-        status: false, message: "Please Provide Valid Price" })
+     if (!/^([0-9]{0,2}((.)[0-9]{0,2}))$/.test(price)) {
+        return res.status(400).send({status: false, message: "Please Provide Valid Price" })
      } 
-       product.price = price
+}
+//validation for isFreeShipping attribute
+    if (typeof isFreeShipping != 'undefined') {
+       isFreeShipping = isFreeShipping.trim()
+    if (!["true", "false"].includes(isFreeShipping)) { return res.status(400).send({ status: false, message: "isFreeshipping is a boolean type only" }) }
 }
 //validation for style
-    if(!validator.isValid(style)){
-         product.style = style
-   }
+    if (style) {
+      if (!isValidName(style)) {
+         return res.status(400).send({ status: false, message: "style is missing" })}
+}
 //validation for currency ID
    if(currencyId){
     if (!validator.isValid(currencyId)) {
@@ -274,7 +279,6 @@ const { title, description, price, currencyId, isFreeShipping, style, availableS
        return res.status(400).send({
          status: false, message: "At this time only 'INR' currency is allowed",});
        }
-      product.currencyId = currencyId;
 }
 //validation for installment
    if(installments){
@@ -285,31 +289,35 @@ const { title, description, price, currencyId, isFreeShipping, style, availableS
     if (!/^(0|[1-9][0-9]*)$/.test(installments)){
         return res.status(400).send({status: false, message: "please enter proper installments"})
     }
-    product.installments = installments;
-   }
-  //validation for product image
-     let files = req.files;
-      if (files && files.length > 0){
-        if(!validator.acceptFileType(productImage[0], 'image/jpeg', 'image/png')){
-            return res.status(400).send({
-              status: false, Message: " we accept jpg, jpeg or png as product image only!" })
-        }
-        const ProductPicture = await uploadFile(productImage[0])
-        product.productImage = ProductPicture
-      }
-    //validation for available sizez
-    if (!validator.isValid(availableSizes)) {
-      let availableSizesobj = JSON.parse(availableSizes)
-        if (!Array.isArray(availableSizesobj)){
-             return res.status(400).send({
-             status: false, Message: `☹️ in availableSizes, invalid array !` })
-        }
-        product.availableSizesobj = availableSizes
-    }
-      await product.save();
-       return res.status(200).send({
-            status: true, message: "✅ Product info updated successfully!", data: product });
-    }
+}
+//check if product image is missing
+  if (data.productImage) {
+     if (!validator.isValid(data.productImage)) {
+        return res.status(400).send({ status: false, message: "ProfileImage is missing ! " }) }
+}
+//validation for product image
+    let productImage = req.files;
+    if (!(productImage && productImage.length)) {
+         return res.status(400).send({ status: false, message: "Please Provide Profile Image" })
+}
+    if(!validator.acceptFileType(productImage[0], 'image/jpeg', 'image/png')){
+          return res.status(400).send({
+            status: false, Message: " we accept jpg, jpeg or png as product image only!" })
+}
+   let updateFileURL = await aws.uploadFile(productImage[0]);
+   console.log(updateFileURL)
+   data.productImage = updateFileURL
+   
+// validation for available sizez
+   if(availableSizes) {
+    if (!validator.isValidSize(availableSizes)) {
+       return res.status(400).send({
+          status: false, message: "Please Provide Available Sizes from S,XS,M,X,L,XXL,XL"});
+  }
+}
+    let UpdateProductData = await ProductModel.findOneAndUpdate({ _id: productId }, data, { new: true })
+    return res.status(201).send({ status: true, message: "product Updated", data: UpdateProductData })
+}
     catch(err){
         res.status(500).send({
             message: "Error", error: err.message})
