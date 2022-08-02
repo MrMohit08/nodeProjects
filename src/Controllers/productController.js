@@ -23,8 +23,10 @@ const createProduct = async function(req, res){
 }
 //validate Description field
     if(!validator.isValid(description)) {
-      return res.status(400).send({
-          status: false, message: "Description must be present" })
+      return res.status(400).send({ status: false, message: "Description must be present" })
+}
+    if (!validator.isValidName(description)) {
+       return res.status(400).send({ status: false, message: "Enter valid description" }) 
 }
 //validate Price field
     if(!price || (typeof(price) != number)){
@@ -54,16 +56,20 @@ const createProduct = async function(req, res){
 }
 //validation for style field
     if(!validator.isValid(style)) {
-      return res.status(400).send({
-        status: false, message: "Style must be present" })
-}   
+      return res.status(400).send({ status: false, message: "Style must be present" })
+} 
+    if(!validator.isValidName(style)) {
+       return res.status(400).send({ status: false, message: "Enter valid style" })
+}
 //validation for available sizes field
-    if(availableSizes) {
-      if (!validator.isValidSize(availableSizes)) {
+    if(!validator.isValid(availableSizes)) {
+       return res.status(400).send({
+         status: false, message: "Available size must be present" })
+}   
+    if(!validator.isValidSize(availableSizes)) {
          return res.status(400).send({
             status: false, message: "Please Provide Available Sizes from S,XS,M,X,L,XXL,XL"});
     }
-}
 //validations for installments
     if(!installments || (typeof(installments) != number)){
        return res.status(400).send({
@@ -75,7 +81,7 @@ const createProduct = async function(req, res){
 //Validation for profile image
     let image = req.files;
      if (!(image && image.length)) {
-       return res.status(400).send({ status: false, message: "Please Provide Profile Image" })
+       return res.status(400).send({ status: false, message: "Please Provide Product Image" })
 }
      let uploadedFileURL = await aws.uploadFile(files[0]);
         console.log(uploadedFileURL)
