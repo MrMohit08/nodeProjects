@@ -49,14 +49,18 @@ const updateCart = async function(req,res){
 
     if (!validator.isValidObjectId(cartId)) {
         return res.status(400).send({
-          status: false, message: "cartId is invalid" });
+          status: false, message: "invalid cart ID" });
 }
-  const findCart = await CartModel.findById(cartId);
+//check if the cart is already exist or not
+  const findCart = await CartModel.findOne({ paramsuserId });
     if (!findCart) {
        return res.status(404).send({
          status: false, message: 'cart not found.' });
 }
-
+   if(findCart._id != cartId){ 
+      return res.status(400).send({
+        status: false, message: 'CartId does\'t belong to this user!'});
+}
 //validation for remove product
     if (!validator.isValid(removeProduct)) {
       return res.status(400).send({
@@ -71,8 +75,8 @@ const updateCart = async function(req,res){
             status: false, message: 'removeProduct should be 0 or 1' })
 }
  // we neeed to check if the item already exist in my item's list or NOT!!
- let index = -1;
- for (let i = 0; i < cart.items.length; i++) {
+/* let index = -1;
+ for (let i = 0; i < findCart.items.length; i++) {
      if (findCart.items[i].productId == productId) {
          index = i
          break
@@ -85,17 +89,45 @@ const updateCart = async function(req,res){
 } else {
     return res.status(400).send({
         status: false, message: `this item you trying to remove is does't exist in your cart`})
+} */
+let findQuantity = findCart.items.find(x => x.productId.toString() === productId)
+
+if (removeProduct == 0) {
+    let totalAmount = findCart.totalPrice - (findProduct.price * findQuantity.quantity)
+    let quantity = findCart.totalItems - 1
+    let newCart = await CartModel.findOneAndUpdate(
+        { _id: cartId },{
+            $pull: { items: { productId: productId } },
+            $set: { totalPrice: totalAmount, totalItems: quantity }}, { new: true })
+
+    return res.status(200).send({
+        status: true, message: 'the product has been removed from the cart', data: newCart})
 }
 
-
-
-  
-  
-
-
+if (removeProduct == 1) {
+    let totalAmount = findCart.totalPrice - findProduct.price
+    let items = findCart.items
+    for (let i = 0; i < items.length; i++) {
+        if (items[i].productId.toString() === productId) {
+            items[i].quantity = items[i].quantity - 1
+            if (items[i].quantity == 0) {
+                var noOfItems = findCart.totalItems - 1
+                let newCart = await CartModel.findOneAndUpdate(
+                    { _id: cartId },{ $pull: { items: { productId: productId } },
+                        $set: { totalPrice: totalAmount, totalItems: noOfItems }}, { new: true })
+                return res.status(200).send({
+                    status: true,message: 'the product has been removed from the cart', data: newCart})
+            }
+        }
+    }
+       let updateddata = await CartModel.findOneAndUpdate(
+            { _id: cartId },{ totalPrice: totalAmount, items: items }, { new: true })
+                return res.status(200).send({
+                   status: true,message: 'product in the cart updated successfully.', data: updateddata})
+}
 } 
   catch(err){
-
+    res.status(500).send({ status: false, error: err.message })
   }
 }
 
