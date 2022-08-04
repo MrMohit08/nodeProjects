@@ -9,7 +9,7 @@ const createProduct = async function(req, res){
 //Validate body 
     if (!validator.isValidBody(data)) {
       return res.status(400).send({
-         status: false, msg: "Please provide details" });
+         status: false, message: "Please provide details" });
  }
 //validate title
     if(!validator.isValid(title)) {
@@ -104,42 +104,42 @@ const getProduct = async function(req, res){
     try{
       let filterQuery = req.query;
       let query = {}
-      let { size, name, priceGreaterThen, priceLessThen, priceSort } = filterQuery;
+      let { size, name, priceGreaterThan, priceLessThan, priceSort } = filterQuery;
         
 //validation for size
    if(size){       
      if(!validator.isValid(size)){
-        return res.status(400).send({status: false, message:"plz Enter Size"})
+        return res.status(400).send({status: false, message:"Enter Size"})
    }
      if(!validator.isValidSize(size)) {
         return res.status(400).send({
            status: false, message: "Please Provide Available Sizes from S,XS,M,X,L,XXL,XL"});
    }
-      query.availableSizes = size
+      query.availableSizes = size.toUpperCase()
 }
 //validation for name
    if(name){       
      if(!validator.isValid(name)){
-       return res.status(400).send({status: false, message:"plz Enter a valid name"})
+       return res.status(400).send({status: false, message:" Enter Product name"})
   }  
-     query.title = {$regex: name}   
+     query.title = name   
 }  
 //validation for  price greater than
-   if(priceGreaterThen) {
-     if(!validator.isValid(priceGreaterThen)){
-        return res.status(400).send({status: false, message:"plz Enter a value"})
+   if(priceGreaterThan) {
+     if(!validator.isValid(priceGreaterThan)){
+        return res.status(400).send({status: false, message:"Enter value for priceGreaterThan field"})
     }
-    query.price = { $gte: priceGreaterThen}
+    query.price = { '$gte': priceGreaterThan}
 } 
 //validation for  price greater than
-   if(priceLessThen) {
-     if(!validator.isValid(priceLessThen)){
-        return res.status(400).send({status: false, message:"plz Enter a value"})
+   if(priceLessThan) {
+     if(!validator.isValid(priceLessThan)){
+        return res.status(400).send({status: false, message:"Enter value for priceLessThan field"})
    }
-    query.price = { $lte: priceLessThen}
+    query.price = { '$lte': priceLessThan}
 }
-  if(priceGreaterThen && priceLessThen){
-    query.price= { '$gt': priceGreaterThen, '$lt': priceLessThen }
+  if(priceGreaterThan && priceLessThan){
+    query.price= { '$gte': priceGreaterThan, '$lte': priceLessThan }
   }
   //sorting
   if (priceSort) {
@@ -148,7 +148,7 @@ const getProduct = async function(req, res){
     }
 }
  
-  let getAllProduct = await ProductModel.find(query).sort({ price: priceSort })
+  let getAllProduct = await ProductModel.find({query,isDeleted:false}).sort({ price: priceSort })
    if (!(getAllProduct.length > 0)) {
       return res.status(404).send({ 
         status: false, message: "Products Not Found" })
@@ -156,7 +156,7 @@ const getProduct = async function(req, res){
 return res.status(200).send({
      status: true, count: getAllProduct.length, message: "Success", data: getAllProduct })
 }
-  catch(err){
+catch(err){
     res.status(500).send({
        message: "Error", error: err.message})
     }

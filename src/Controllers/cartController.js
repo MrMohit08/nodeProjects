@@ -3,6 +3,107 @@ const ProductModel = require('../Models/productModel');
 const validator = require('../Validations/validation');
 const UserModel = require("../Models/userModel")
 
+const creatCart = async function(req,res){
+    try{
+        let userId = req.params.userId
+        const data = req.body
+        let { productId, quantity } = data
+
+    if(!validator.isValidObjectId(userId)){
+            return res.status(404).send({ status: false, message: "Invalid UserId" })
+    }
+//checking userID from UserModel (DB CALL)
+    let checkId = await UserModel.findById(userId)
+    if (!checkId){
+        return res.status(200).send({ status: true, msg: "User not found" })
+    }
+   //validate body
+     if (!validator.isValidBody(data)) {
+       return res.status(400).send({ status: false, msg: "please provide Cart details" });
+}
+//validate productID
+     if (!validator.isValid(productId)) {
+       return res.status(400).send({ status: false, messege: "please provide productId" })
+}
+     if (!validator.isValidObjectId(productId)) {
+         return res.status(400).send({ status: false, message: "productId is invalid" });
+}
+    const findProduct = await ProductModel.findById(productId);
+     if (!findProduct) {
+       return res.status(404).send({ status: false, message: 'product not found.' });
+}
+    if (findProduct.isDeleted == true) {
+        return res.status(400).send({ status: false, message: "product is deleted" });
+}
+// Validate Quantity
+    if (!quantity) {
+         quantity = 1
+}
+    if ((isNaN(Number(quantity)))) {
+        return res.status(400).send({ status: false, message: 'quantity should be a valid number' })
+}
+    if (quantity < 0) {
+       return res.status(400).send({ status: false, message: 'quantity can not be less than zero' })
+}
+//IF CART IS NOT CREATED OF A PARTICULAR USER
+    const isOldUser = await CartModel.findOne({userId: userId});
+    if (!isOldUser) {
+        const newCart = {
+            userId: userId,
+            items: [{
+                productId: productId,
+                quantity: quantity
+            }],
+            totalPrice: (findProduct.price) * quantity,
+            totalItems: 1
+        }
+      const createCart = await CartModel.create(newCart)
+          return res.status(201).send({
+            status: true, message: "cart created successfully", data: createCart })
+    }
+ //if Cart is already Created it will update the cart by items 
+    if(isOldUser) {
+        const newTotalPrice = (isOldUser.totalPrice) + ((findProduct.price) * quantity)
+            let flag = 0;
+            const items = isOldUser.items
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].productId.toString() === productId) {  //compare product ID 
+                    
+                    items[i].quantity += quantity
+                    var newCartData = {
+                        items: items,
+                        totalPrice: newTotalPrice,
+                        quantity: items[i].quantity
+                    }
+                    flag = 1
+                    const saveData = await CartModel.findOneAndUpdate(
+                        { userId: userId }, newCartData, { new: true })
+                   return res.status(201).send({
+                     status: true,message: "product added to the cart successfully", data: saveData
+                    })
+                }
+            }
+            if (flag === 0) {    
+                
+                let addItems = {
+                    productId: productId,
+                    quantity: quantity
+                }
+                const saveData = await CartModel.findOneAndUpdate(
+                    { userId: userIdFromParams },
+                    { $addToSet: { items: addItems }, $inc: { totalItems: 1, totalPrice: ((findProduct.price) * quantity) } },
+                    { new: true }).select({ "items._id": 0 })
+                return res.status(201).send({ status: true, message: "product added to the cart successfully", data: saveData })
+            }
+        }
+    }
+    catch(err){
+        return res.status(500).json({ status: false, message: error.message });
+    }
+}
+
+//=============================================Update Cart=======================================//
+
 const updateCart = async function(req,res){
     try{
         let paramsuserId = req.params.userId
@@ -74,25 +175,14 @@ const updateCart = async function(req,res){
         return res.status(400).send({
             status: false, message: 'removeProduct should be 0 or 1' })
 }
- // we neeed to check if the item already exist in my item's list or NOT!!
-/* let index = -1;
- for (let i = 0; i < findCart.items.length; i++) {
-     if (findCart.items[i].productId == productId) {
-         index = i
-         break
-     }
- }
- //add items in my item's
- if (index >= 0) {
-    if (findCart.items[index].quantity < removeProduct) return res.status(400).send({
-        status: false, message: `Can't remove, please provide removeProduct <= ${findCart.items[index].quantity} !` })
-} else {
-    return res.status(400).send({
-        status: false, message: `this item you trying to remove is does't exist in your cart`})
-} */
+ 
 let findQuantity = findCart.items.find(x => x.productId.toString() === productId)
 
 if (removeProduct == 0) {
+    let itemsarr = findCart.items
+    if (itemsarr.length == []) {
+        return res.status(400).send({ status: false, message: "No products to remove cart is empty" });
+    }
     let totalAmount = findCart.totalPrice - (findProduct.price * findQuantity.quantity)
     let quantity = findCart.totalItems - 1
     let newCart = await CartModel.findOneAndUpdate(
@@ -105,6 +195,10 @@ if (removeProduct == 0) {
 }
 
 if (removeProduct == 1) {
+    let itemsarr = findCart.items
+      if (itemsarr.length == []) {
+          return res.status(400).send({ status: false, message: "No products found to reduce with given productid in cart" });
+      }
     let totalAmount = findCart.totalPrice - findProduct.price
     let items = findCart.items
     for (let i = 0; i < items.length; i++) {
@@ -198,7 +292,7 @@ const deleteCart = async function(req,res){
     }
 }
 
-module.exports.createCart = createCart
+module.exports.creatCart = creatCart
 module.exports.updateCart = updateCart
 module.exports.getCart = getCart
 module.exports.deleteCart = deleteCart
