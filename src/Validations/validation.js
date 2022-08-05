@@ -46,6 +46,10 @@ const acceptFileType = (file, ...types) => {
     return types.indexOf(file.mimetype) !== -1 ? true : false
 }
 
+const isValidStatus = function (status) {
+    let state = ['pending','completed','cancelled'];
+    return state.includes(status);
+  }
 
 
   module.exports.isValid = isValid
@@ -56,3 +60,4 @@ const acceptFileType = (file, ...types) => {
   module.exports.isValidPassword = isValidPassword
   module.exports.isValidSize = isValidSize
   module.exports.acceptFileType = acceptFileType
+  module.exports.isValidStatus = isValidStatus

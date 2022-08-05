@@ -60,5 +60,53 @@ const postOrder = async function (req, res) {
     }
 };
 
+//===================================================update order===================================//
+
+const updateOrder = async function (req, res) {
+    try {
+        let userId = req.params.userId;
+        let data = req.body;
+        if(!validator.isValidObjectId(userId)) {
+            return res.status(400).send({status: false, message: "Provide a valid userId"});
+        }
+
+        let validUser = await UserModel.findOne({_id: userId});
+        if(!isEmpty(validUser)) {
+            return res.status(404).send({status: false, message: "User doesn't exist"});
+        }
+        if (!validator.isValidBody(data)) {
+            return res.status(400).send({
+               status: false, message: "Please provide details" });
+        }
+        let { orderId, status } = data;
+        if(!validator.isValid(orderId)) {
+            return res.status(400).send({status: false, message: "OrderId must be filled"});
+        }
+        if(!validator.isValid(status)) {
+            return res.status(400).send({status: false, message: "Provide a order status"});
+        }
+        if(!validator.isValidObjectId(orderId)) {
+            return res.status(400).send({status: false, message: "Provide a valid orderId"});
+        }
+        if(!validator.isValidStatus(status)) {
+            return res.status(400).send({status: false, message: "Order status should include pending, completed or cancelled only!"});
+        }
+        let validOrder = await OrderModel.findOne({_id: orderId});
+        if(!validOrder) {
+            return res.status(404).send({status: false, message: "Order doesn't exist"});
+        }
+        if(status == 'cancelled') {
+            if(validOrder.cancellable == false) {
+                return res.status(400).send({status: false, message: "This order is not cancellable"});
+            }
+        }
+        let updateOrder = await OrderModel.findOneAndUpdate({_id:orderId},{$set:{status:status,cancellable:false}},{new:true})
+           return res.status(200).send({status: true, message: `Order status has been updated to ${status} successfully`, data: updateOrder});
+    } catch(err) {
+        return res.status(500).send({status: false, message: err.message});
+    }
+};
+
 module.exports.postOrder = postOrder
+module.exports.updateOrder = updateOrder
 
