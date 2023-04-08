@@ -1,5 +1,5 @@
 
-# Git and GitHub command cheat sheet  
+# Git Commands cheat-sheet 
  <img src="https://raw.githubusercontent.com/arslanbilal/git-cheat-sheet/master/Img/git-logo.png" alt="git-logo" width="600" >
 
 ## What is Git?
